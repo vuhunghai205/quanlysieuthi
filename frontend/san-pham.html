@@ -26,6 +26,7 @@
                 <a href="ton-kho.html" class="nav-item">Tồn kho</a>
                 <a href="nha-cung-cap.html" class="nav-item" id="menu-ncc" style="display:none">Nhà cung cấp</a>
                 <a href="khach-hang.html" class="nav-item">Khách hàng</a>
+                <a href="bao-cao.html" class="nav-item">Báo cáo</a>
                 <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
                 <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
             </nav>
@@ -51,6 +52,7 @@
                             <tr>
                                 <th>Mã SP</th>
                                 <th>Tên sản phẩm</th>
+                                <th>Nhà cung cấp</th>
                                 <th>Giá bán</th>
                                 <th>Tồn kho</th>
                                 <th>Trạng thái</th>
@@ -58,7 +60,7 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr><td colspan="6">Đang tải...</td></tr>
+                            <tr><td colspan="7">Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -73,21 +75,18 @@
             <div id="modalError" class="alert alert-danger"></div>
             <form id="productForm">
                 <input type="hidden" id="sp_id">
-                <div class="form-group">
-                    <label class="form-label">Nhà cung cấp</label>
-                    <select id="sp_ncc" class="form-control" required></select>
-                </div>
+                
                 <div class="form-group">
                     <label class="form-label">Mã SP</label>
                     <input type="text" id="sp_ma" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Nhà cung cấp</label>
-                    <select id="sp_ncc" class="form-control" required></select>
-                </div>
-                <div class="form-group">
                     <label class="form-label">Tên sản phẩm</label>
                     <input type="text" id="sp_ten" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <select id="sp_ncc" class="form-control" required></select>
                 </div>
                 <div class="form-group" style="display: flex; gap: 1rem;">
                     <div style="flex: 1;">
@@ -98,10 +97,6 @@
                         <label class="form-label">Giá vốn</label>
                         <input type="number" id="sp_gia_von" class="form-control" required>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Nhà cung cấp</label>
-                    <select id="sp_ncc" class="form-control" required></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Đơn vị tính</label>
@@ -135,13 +130,14 @@
                 tbody.innerHTML = '';
                 
                 if (!res.data || res.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Chưa có sản phẩm nào.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">Chưa có sản phẩm nào.</td></tr>';
                     return;
                 }
 
                 res.data.forEach(sp => {
                     const status = sp.hoatDong ? '<span style="color:var(--primary)">Kinh doanh</span>' : '<span style="color:var(--danger)">Ngừng</span>';
                     const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sp.giaBan);
+                    const ncc = sp.nhaCungCap ? sp.nhaCungCap.tenNhaCungCap : '-';
                     
                     let actions = '';
                     if (user.role === 'ADMIN' || user.role === 'MANAGER') {
@@ -155,6 +151,7 @@
                         <tr>
                             <td>${sp.maSanPham}</td>
                             <td>${sp.tenSanPham}</td>
+                            <td><small>${ncc}</small></td>
                             <td>${price}</td>
                             <td>${sp.soLuongTon} ${sp.donVi || ''}</td>
                             <td>${status}</td>
@@ -191,8 +188,8 @@
             document.getElementById('sp_gia_ban').value = sp.giaBan;
             document.getElementById('sp_gia_von').value = sp.giaVon;
             document.getElementById('sp_don_vi').value = sp.donVi;
-            document.getElementById('sp_ncc').value = sp.nhaCungCap ? sp.nhaCungCap.id : '';
             try { const nccRes = await goiApi("/nha-cung-cap"); document.getElementById("sp_ncc").innerHTML = nccRes.data.map(n => `<option value="${n.id}">${n.tenNhaCungCap}</option>`).join(""); } catch(e){}
+            document.getElementById('sp_ncc').value = sp.nhaCungCap ? sp.nhaCungCap.id : '';
             document.getElementById('productModal').style.display = 'flex';
         }
 
@@ -202,10 +199,10 @@
             const data = {
                 maSanPham: document.getElementById('sp_ma').value,
                 tenSanPham: document.getElementById('sp_ten').value,
+                nhaCungCapId: parseInt(document.getElementById('sp_ncc').value),
                 giaBan: parseFloat(document.getElementById('sp_gia_ban').value),
                 giaVon: parseFloat(document.getElementById('sp_gia_von').value),
                 donVi: document.getElementById('sp_don_vi').value,
-                nhaCungCapId: parseInt(document.getElementById('sp_ncc').value),
                 hoatDong: true
             };
 
