@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo cáo - Hùng Hải Mart</title>
+    <link rel="stylesheet" href="css/bien.css">
+    <link rel="stylesheet" href="css/bo-cuc.css">
+    <link rel="stylesheet" href="css/thanh-phan.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">Hùng Hải Mart</div>
+            <nav class="sidebar-nav">
+                <a href="tong-quan.html" class="nav-item">Tổng quan</a>
+                <a href="san-pham.html" class="nav-item">Sản phẩm</a>
+                <a href="don-hang.html" class="nav-item">Đơn hàng</a>
+                <a href="ton-kho.html" class="nav-item">Tồn kho</a>
+                <a href="khach-hang.html" class="nav-item">Khách hàng</a>
+                <a href="bao-cao.html" class="nav-item active">Báo cáo</a>
+                <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
+                <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div style="font-weight: 500;">Báo cáo Tài chính & Hoạt động</div>
+                <div><button onclick="logout()" class="btn">Đăng xuất</button></div>
+            </header>
+            
+            <div class="content-body" id="baoCaoContent">
+                <div class="alert alert-danger" id="errorAlert" style="display:none;"></div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Doanh thu tháng</div>
+                        <div id="doanhThuThang" style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">-</div>
+                    </div>
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Lợi nhuận</div>
+                        <div id="loiNhuan" style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">-</div>
+                    </div>
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Đơn hoàn tất</div>
+                        <div id="donHoanTat" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-top: 0.5rem;">-</div>
+                    </div>
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Tỷ lệ hủy</div>
+                        <div id="tyLeHuy" style="font-size: 1.5rem; font-weight: 700; color: var(--danger); margin-top: 0.5rem;">-</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        const user = getUser();
+        if (user && user.role === 'ADMIN') {
+            document.getElementById('menu-chi-nhanh').style.display = 'block';
+            document.getElementById('menu-nguoi-dung').style.display = 'block';
+        }
+
+        if (user && user.role === 'STAFF') {
+            document.getElementById('baoCaoContent').innerHTML = '<div class="alert alert-danger" style="display:block">Nhân viên không được xem báo cáo tài chính chi tiết.</div>';
+        } else {
+            loadData();
+        }
+
+        async function loadData() {
+            try {
+                const res = await goiApi('/bao-cao/tong-quan');
+                document.getElementById('doanhThuThang').textContent = res.data.doanhThuThang;
+                document.getElementById('loiNhuan').textContent = res.data.loiNhuan;
+                document.getElementById('donHoanTat').textContent = res.data.donHoanTat;
+                document.getElementById('tyLeHuy').textContent = res.data.tyLeHuy;
+            } catch (err) {
+                const alert = document.getElementById('errorAlert');
+                alert.textContent = err.message;
+                alert.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
