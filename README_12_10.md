@@ -47,7 +47,18 @@ git clone <đường-dẫn-repository-của-bạn>
 cd quanlysieuthi
 ```
 
-**Bước 2: Xây dựng và khởi chạy hệ thống**
+**Bước 2: Cấu hình biến môi trường (.env)**
+Vì lý do bảo mật, file chứa mật khẩu Database không được đẩy lên Github. Mình đã để sẵn một file mẫu tên là `.env.example`. Bạn cần copy file này ra và đổi tên thành `.env`:
+- **Đối với Linux / macOS (Terminal):**
+  ```bash
+  cp .env.example .env
+  ```
+- **Đối với Windows (Command Prompt / PowerShell):**
+  ```cmd
+  copy .env.example .env
+  ```
+
+**Bước 3: Xây dựng và khởi chạy hệ thống bằng Docker**
 Chạy lệnh Docker Compose để tự động tải MySQL, tự động build code Java và HTML:
 ```bash
 # Đối với Linux / Ubuntu (có thể cần sudo):
@@ -57,11 +68,11 @@ sudo docker compose up -d --build
 docker compose up -d --build
 ```
 
-**Bước 3: Truy cập Ứng dụng**
+**Bước 4: Truy cập Ứng dụng**
 Sau khi terminal báo `Started` cho tất cả các container, hãy mở trình duyệt web và truy cập vào:
 👉 **http://localhost:3000**
 
-**Bước 4: Đăng nhập hệ thống**
+**Bước 5: Đăng nhập hệ thống**
 Sử dụng tài khoản Quản trị viên (Admin) mặc định đã được tạo sẵn trong Database:
 - **Email:** `admin@hunghaimart.vn`
 - **Mật khẩu:** `123456`
