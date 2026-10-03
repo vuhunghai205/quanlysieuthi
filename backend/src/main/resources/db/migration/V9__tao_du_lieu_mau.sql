@@ -11,3 +11,8 @@ VALUES
 ('Quản Lý HCM', 'manager.hcm@hunghaimart.vn', '$2b$12$HgRy7ouUdgfyNTb6YGgT.OuTSj.PDKRMfxSVJNTm9lGjVSO9toln.', '0901000003', 'MANAGER', 2, TRUE),
 ('Nhân Viên HN', 'staff.hn@hunghaimart.vn', '$2b$12$HgRy7ouUdgfyNTb6YGgT.OuTSj.PDKRMfxSVJNTm9lGjVSO9toln.', '0901000004', 'STAFF', 1, TRUE),
 ('Nhân Viên HCM', 'staff.hcm@hunghaimart.vn', '$2b$12$HgRy7ouUdgfyNTb6YGgT.OuTSj.PDKRMfxSVJNTm9lGjVSO9toln.', '0901000005', 'STAFF', 2, TRUE);
+
+-- Dữ liệu mẫu danh mục
+INSERT INTO danh_muc (ten_danh_muc, mo_ta) VALUES 
+('Thực phẩm khô', 'Gạo, mì tôm, gia vị...'),
+('Đồ uống', 'Nước ngọt, bia, rượu...'),
