@@ -17,13 +17,13 @@ public class ChiTietDonHang {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "don_hang_id", nullable = false)
 
     @JsonIgnoreProperties("chiTietDonHangs")
     private DonHang donHang;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "san_pham_id", nullable = false)
     private SanPham sanPham;
 

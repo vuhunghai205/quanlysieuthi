@@ -27,11 +27,11 @@ public class SanPham {
     @Column(name = "mo_ta")
     private String moTa;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "danh_muc_id")
     private DanhMuc danhMuc;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chi_nhanh_id")
     private ChiNhanh chiNhanh;
 

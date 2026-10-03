@@ -10,6 +10,8 @@
         .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
         .table th { background-color: var(--mint); color: var(--primary); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;}
     </style>
 </head>
 <body>
@@ -38,7 +40,7 @@
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 class="card-title" style="margin: 0;">Danh sách sản phẩm</h3>
-                        <button class="btn btn-primary" id="btnAddProduct" style="display:none;">+ Thêm sản phẩm</button>
+                        <button class="btn btn-primary" id="btnAddProduct" style="display:none;" onclick="showModal()">+ Thêm sản phẩm</button>
                     </div>
                     
                     <div id="errorAlert" class="alert alert-danger"></div>
@@ -61,6 +63,43 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-bottom: 1rem; color: var(--primary);">Thêm sản phẩm</h3>
+            <div id="modalError" class="alert alert-danger"></div>
+            <form id="productForm">
+                <input type="hidden" id="sp_id">
+                <div class="form-group">
+                    <label class="form-label">Mã SP</label>
+                    <input type="text" id="sp_ma" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tên sản phẩm</label>
+                    <input type="text" id="sp_ten" class="form-control" required>
+                </div>
+                <div class="form-group" style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label class="form-label">Giá bán</label>
+                        <input type="number" id="sp_gia_ban" class="form-control" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-label">Giá vốn</label>
+                        <input type="number" id="sp_gia_von" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Đơn vị tính</label>
+                    <input type="text" id="sp_don_vi" class="form-control" placeholder="Cái, Hộp, Chai...">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn" style="flex: 1; border: 1px solid var(--border);" onclick="hideModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Lưu</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="js/api.js"></script>
@@ -92,7 +131,7 @@
                     
                     let actions = '';
                     if (user.role === 'ADMIN' || user.role === 'MANAGER') {
-                        actions = `<button class="btn" style="border: 1px solid var(--border); padding: 0.25rem 0.5rem; font-size: 0.75rem;">Sửa</button>`;
+                        actions = `<button class="btn" style="border: 1px solid var(--border); padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick='editProduct(${JSON.stringify(sp)})'>Sửa</button>`;
                     }
                     if (user.role === 'ADMIN') {
                         actions += ` <button class="btn" style="border: 1px solid var(--danger); color: var(--danger); padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deleteProduct(${sp.id})">Xóa</button>`;
@@ -115,6 +154,57 @@
                 alert.style.display = 'block';
             }
         }
+
+        function showModal() {
+            document.getElementById('productForm').reset();
+            document.getElementById('sp_id').value = '';
+            document.getElementById('modalTitle').textContent = 'Thêm sản phẩm';
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        function editProduct(sp) {
+            document.getElementById('modalTitle').textContent = 'Sửa sản phẩm';
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('sp_id').value = sp.id;
+            document.getElementById('sp_ma').value = sp.maSanPham;
+            document.getElementById('sp_ten').value = sp.tenSanPham;
+            document.getElementById('sp_gia_ban').value = sp.giaBan;
+            document.getElementById('sp_gia_von').value = sp.giaVon;
+            document.getElementById('sp_don_vi').value = sp.donVi;
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('sp_id').value;
+            const data = {
+                maSanPham: document.getElementById('sp_ma').value,
+                tenSanPham: document.getElementById('sp_ten').value,
+                giaBan: parseFloat(document.getElementById('sp_gia_ban').value),
+                giaVon: parseFloat(document.getElementById('sp_gia_von').value),
+                donVi: document.getElementById('sp_don_vi').value,
+                hoatDong: true
+            };
+
+            try {
+                if (id) {
+                    await goiApi('/san-pham/' + id, { method: 'PUT', body: JSON.stringify(data) });
+                } else {
+                    await goiApi('/san-pham', { method: 'POST', body: JSON.stringify(data) });
+                }
+                hideModal();
+                loadData();
+            } catch (err) {
+                const errDiv = document.getElementById('modalError');
+                errDiv.textContent = err.message;
+                errDiv.style.display = 'block';
+            }
+        });
 
         async function deleteProduct(id) {
             if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) return;

@@ -17,11 +17,11 @@ public class GiaoDichTonKho {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "san_pham_id", nullable = false)
     private SanPham sanPham;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chi_nhanh_id", nullable = false)
     private ChiNhanh chiNhanh;
 
@@ -34,7 +34,7 @@ public class GiaoDichTonKho {
     @Column(name = "ghi_chu")
     private String ghiChu;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "nguoi_tao_id", nullable = false)
     private NguoiDung nguoiTao;
 

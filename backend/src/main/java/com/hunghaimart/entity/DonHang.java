@@ -22,15 +22,15 @@ public class DonHang {
     @Column(name = "ma_don_hang", nullable = false, unique = true)
     private String maDonHang;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "khach_hang_id")
     private KhachHang khachHang;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chi_nhanh_id", nullable = false)
     private ChiNhanh chiNhanh;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "nguoi_tao_id", nullable = false)
     private NguoiDung nguoiTao;
 

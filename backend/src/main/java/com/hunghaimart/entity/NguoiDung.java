@@ -35,7 +35,7 @@ public class NguoiDung {
     @Column(name = "vai_tro", nullable = false)
     private String vaiTro;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chi_nhanh_id")
     private ChiNhanh chiNhanh;
 
