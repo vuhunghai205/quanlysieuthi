@@ -126,7 +126,7 @@ public class DonHangService {
                 throw new BusinessException("Khách hàng không đủ điểm tích lũy");
             }
             // Quy đổi 1 điểm = 1000 VNĐ
-            giamGia = BigDecimal.valueOf(request.getDiemSuDung() * 1000L);
+            giamGia = BigDecimal.valueOf(request.getDiemSuDung() * 200L);
             if (giamGia.compareTo(tongTienHang) > 0) {
                 giamGia = tongTienHang; // Không giảm vượt quá giá trị đơn hàng
             }

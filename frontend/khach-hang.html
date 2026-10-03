@@ -23,6 +23,7 @@
                 <a href="don-hang.html" class="nav-item">Đơn hàng</a>
                 <a href="ton-kho.html" class="nav-item">Tồn kho</a>
                 <a href="khach-hang.html" class="nav-item active">Khách hàng</a>
+                <a href="bao-cao.html" class="nav-item">Báo cáo</a>
                 <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
                 <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
             </nav>
@@ -36,14 +37,14 @@
             
             <div class="content-body">
                 <div class="card">
-                    <h3 class="card-title">Danh sách khách hàng</h3>
+                    <h3 class="card-title">Danh sách khách hàng & Điểm tích lũy</h3>
                     <div id="errorAlert" class="alert alert-danger"></div>
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Họ tên</th>
                                 <th>Số điện thoại</th>
-                                <th>Địa chỉ</th>
+                                <th>Số điểm hiện tại</th>
                                 <th>Ngày tạo</th>
                             </tr>
                         </thead>
@@ -80,9 +81,9 @@
                     const date = new Date(kh.ngayTao).toLocaleDateString('vi-VN');
                     tbody.innerHTML += `
                         <tr>
-                            <td>${kh.hoTen}</td>
+                            <td style="font-weight: 500;">${kh.hoTen}</td>
                             <td>${kh.soDienThoai}</td>
-                            <td>${kh.diaChi || '-'}</td>
+                            <td style="color: var(--success); font-weight: bold;">${kh.diemTichLuy || 0} đỉểm</td>
                             <td>${date}</td>
                         </tr>
                     `;
