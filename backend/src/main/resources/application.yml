@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: hung-hai-mart
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/hung_hai_mart}
+    username: ${SPRING_DATASOURCE_USERNAME:hung_hai_app}
+    password: ${SPRING_DATASOURCE_PASSWORD:hung_hai_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:change_this_to_a_long_random_development_secret}
+  expiration: ${JWT_EXPIRATION:3600000}
