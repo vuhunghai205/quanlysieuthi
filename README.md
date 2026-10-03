@@ -18,7 +18,10 @@ Toàn bộ hệ thống chạy qua Docker Compose, gồm 3 container chính:
 - Docker và Docker Compose.
 
 ## Cách tạo môi trường (Environment)
-Copy file `.env.example` thành `.env` để cấu hình thông tin database:
+> **Lưu ý quan trọng dành cho Giảng viên / Người review code:** 
+> Dự án áp dụng best practice bảo mật là không push file `.env` lên GitHub. Do đó, sau khi clone code về, bước đầu tiên bắt buộc phải làm là copy file `.env.example` thành `.env` để khởi tạo cấu hình mật khẩu nội bộ.
+
+Chạy lệnh sau trong terminal tại thư mục gốc của dự án:
 ```bash
 cp .env.example .env
 ```
