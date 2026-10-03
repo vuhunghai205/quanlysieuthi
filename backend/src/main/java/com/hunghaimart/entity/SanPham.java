@@ -5,6 +5,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "san_pham")
 @Data
