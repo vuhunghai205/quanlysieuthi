@@ -2,19 +2,50 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tổng quan - Hùng Hải Mart</title>
     <link rel="stylesheet" href="css/bien.css">
     <link rel="stylesheet" href="css/bo-cuc.css">
     <link rel="stylesheet" href="css/thanh-phan.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .stat-title {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .stat-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .val-money { color: var(--primary); font-weight: 600; }
+        .val-num { color: var(--secondary); font-weight: 600; }
+    </style>
 </head>
 <body>
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-logo">
-                Hùng Hải Mart
-            </div>
+            <div class="sidebar-logo">Hùng Hải Mart</div>
             <nav class="sidebar-nav">
                 <a href="tong-quan.html" class="nav-item active">Tổng quan</a>
                 <a href="san-pham.html" class="nav-item">Sản phẩm</a>
@@ -22,40 +53,52 @@
                 <a href="ton-kho.html" class="nav-item">Tồn kho</a>
                 <a href="khach-hang.html" class="nav-item">Khách hàng</a>
                 <a href="bao-cao.html" class="nav-item">Báo cáo</a>
+                <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
+                <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
                 <div style="font-weight: 500;">Bảng điều khiển</div>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <span id="userNameDisplay" style="font-size: 0.875rem;"></span>
-                    <button onclick="logout()" class="btn" style="border: 1px solid var(--border);">Đăng xuất</button>
+                    <span id="userInfo" style="font-size: 0.9rem;"></span>
+                    <button onclick="logout()" class="btn">Đăng xuất</button>
                 </div>
             </header>
             
             <div class="content-body">
                 <h2 style="margin-bottom: 1.5rem;">Tổng quan hoạt động</h2>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                    <div class="card" style="margin-bottom: 0;">
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Doanh thu hôm nay</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">₫24.680.000</div>
-                    </div>
-                    <div class="card" style="margin-bottom: 0;">
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Đơn hàng mới</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning); margin-top: 0.5rem;">186</div>
-                    </div>
-                    <div class="card" style="margin-bottom: 0;">
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Khách hàng mới</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-top: 0.5rem;">2.840</div>
-                    </div>
-                </div>
+                <div id="dashError" class="alert alert-danger" style="display:none;"></div>
                 
-                <div class="card">
-                    <h3 class="card-title">Xin chào!</h3>
-                    <div id="dashError" class="alert alert-danger" style="display:none;"></div>
+                <div class="dashboard-grid">
+                    <!-- Doanh thu -->
+                    <div class="stat-card">
+                        <div class="stat-title">💰 Doanh thu</div>
+                        <div class="stat-row"><span>Hôm nay:</span> <span class="val-money" id="dt_ngay">...</span></div>
+                        <div class="stat-row"><span>Tuần này:</span> <span class="val-money" id="dt_tuan">...</span></div>
+                        <div class="stat-row"><span>Tháng này:</span> <span class="val-money" id="dt_thang">...</span></div>
+                        <div class="stat-row"><span>Năm nay:</span> <span class="val-money" id="dt_nam">...</span></div>
+                    </div>
+
+                    <!-- Đơn hàng -->
+                    <div class="stat-card">
+                        <div class="stat-title">🛒 Đơn hàng thành công</div>
+                        <div class="stat-row"><span>Hôm nay:</span> <span class="val-num" id="dh_ngay">...</span></div>
+                        <div class="stat-row"><span>Tuần này:</span> <span class="val-num" id="dh_tuan">...</span></div>
+                        <div class="stat-row"><span>Tháng này:</span> <span class="val-num" id="dh_thang">...</span></div>
+                        <div class="stat-row"><span>Năm nay:</span> <span class="val-num" id="dh_nam">...</span></div>
+                    </div>
+
+                    <!-- Khách hàng -->
+                    <div class="stat-card">
+                        <div class="stat-title">👥 Khách hàng mới</div>
+                        <div class="stat-row"><span>Hôm nay:</span> <span class="val-num" id="kh_ngay">...</span></div>
+                        <div class="stat-row"><span>Tuần này:</span> <span class="val-num" id="kh_tuan">...</span></div>
+                        <div class="stat-row"><span>Tháng này:</span> <span class="val-num" id="kh_thang">...</span></div>
+                        <div class="stat-row"><span>Năm nay:</span> <span class="val-num" id="kh_nam">...</span></div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -64,12 +107,44 @@
     <script src="js/api.js"></script>
     <script>
         checkAuth();
-        document.addEventListener("DOMContentLoaded", () => {
-            const user = getUser();
-            if (user) {
-                document.getElementById("userNameDisplay").textContent = `${user.fullName} (${user.role})`;
+        const user = getUser();
+        if (user) {
+            document.getElementById('userInfo').textContent = `${user.name} (${user.role})`;
+            if (user.role === 'ADMIN') {
+                document.getElementById('menu-chi-nhanh').style.display = 'block';
+                document.getElementById('menu-nguoi-dung').style.display = 'block';
             }
-        });
+        }
+
+        async function loadDashboard() {
+            try {
+                const res = await goiApi('/dashboard/tong-quan');
+                const data = res.data;
+                const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+
+                document.getElementById('dt_ngay').textContent = fmt.format(data.doanhThu.ngay);
+                document.getElementById('dt_tuan').textContent = fmt.format(data.doanhThu.tuan);
+                document.getElementById('dt_thang').textContent = fmt.format(data.doanhThu.thang);
+                document.getElementById('dt_nam').textContent = fmt.format(data.doanhThu.nam);
+
+                document.getElementById('dh_ngay').textContent = data.donHang.ngay;
+                document.getElementById('dh_tuan').textContent = data.donHang.tuan;
+                document.getElementById('dh_thang').textContent = data.donHang.thang;
+                document.getElementById('dh_nam').textContent = data.donHang.nam;
+
+                document.getElementById('kh_ngay').textContent = data.khachHang.ngay;
+                document.getElementById('kh_tuan').textContent = data.khachHang.tuan;
+                document.getElementById('kh_thang').textContent = data.khachHang.thang;
+                document.getElementById('kh_nam').textContent = data.khachHang.nam;
+                
+            } catch (err) {
+                const errDiv = document.getElementById('dashError');
+                errDiv.textContent = 'Lỗi tải dữ liệu: ' + err.message;
+                errDiv.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDashboard);
     </script>
 </body>
 </html>
