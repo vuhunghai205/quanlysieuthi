@@ -11,7 +11,10 @@
         .table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
         .table th { background-color: var(--mint); color: var(--primary); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: var(--card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;}
+        .modal-content { background: var(--card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto;}
+        
+        .cart-table th, .cart-table td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
+        .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
@@ -41,7 +44,7 @@
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 class="card-title" style="margin: 0;">Lịch sử đơn hàng</h3>
-                        <button class="btn btn-primary" onclick="showModal()">+ Tạo đơn hàng</button>
+                        <button class="btn btn-primary" onclick="showModal()">+ Bán hàng (Tạo đơn)</button>
                     </div>
                     
                     <div id="errorAlert" class="alert alert-danger"></div>
@@ -51,8 +54,8 @@
                             <tr>
                                 <th>Mã đơn</th>
                                 <th>Khách hàng</th>
-                                <th>Tổng tiền</th>
-                                <th>Trạng thái</th>
+                                <th>Giảm giá</th>
+                                <th>Khách phải trả</th>
                                 <th>Thời gian</th>
                             </tr>
                         </thead>
@@ -65,36 +68,85 @@
         </main>
     </div>
 
-    <!-- Modal Form -->
+    <!-- Modal Form Bán Hàng -->
     <div class="modal" id="orderModal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 1rem; color: var(--primary);">Tạo Đơn Hàng Mới</h3>
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">🛒 Hệ thống POS - Bán hàng</h3>
             <div id="modalError" class="alert alert-danger"></div>
-            <form id="orderForm">
-                <div class="form-group">
-                    <label class="form-label">Chi nhánh xuất bán</label>
+            
+            <div style="display: flex; gap: 2rem;">
+                <!-- Cột trái: Thông tin Khách hàng -->
+                <div style="flex: 1; border-right: 1px solid var(--border); padding-right: 1rem;">
+                    <h4 style="margin-bottom: 1rem;">Thông tin khách hàng</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">SĐT Khách (Để trống nếu khách vãng lai)</label>
+                        <input type="text" id="dh_kh_sdt" class="form-control" placeholder="Nhập SĐT để tích điểm..." oninput="checkCustomer()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tên khách hàng</label>
+                        <input type="text" id="dh_kh_ten" class="form-control" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div class="alert alert-info" id="pointsInfo" style="display:none; font-size: 0.85rem;">
+                        Điểm hiện tại: <strong id="dh_kh_diem">0</strong> (1 điểm = 1,000 đ)
+                    </div>
+                    <div class="form-group" id="usePointsGroup" style="display:none;">
+                        <label class="form-label">Dùng điểm để giảm giá</label>
+                        <input type="number" id="dh_diem_su_dung" class="form-control" value="0" min="0" onchange="updateTotal()">
+                    </div>
+
+                    <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Chi nhánh xuất bán</h4>
                     <select id="dh_chi_nhanh" class="form-control" required></select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Khách hàng (Tùy chọn)</label>
-                    <select id="dh_khach_hang" class="form-control">
-                        <option value="">-- Khách lẻ --</option>
-                    </select>
+
+                <!-- Cột phải: Giỏ hàng -->
+                <div style="flex: 2;">
+                    <h4 style="margin-bottom: 1rem;">Giỏ hàng</h4>
+                    
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <select id="sp_select" class="form-control"></select>
+                        <input type="number" id="sp_qty" class="form-control" style="width: 80px;" value="1" min="1">
+                        <button class="btn btn-primary" onclick="addToCart()">Thêm</button>
+                    </div>
+
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>SL</th>
+                                <th>Đơn giá</th>
+                                <th>Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody">
+                            <tr><td colspan="4" style="text-align:center;">Giỏ hàng rỗng</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div style="background: var(--bg); padding: 1rem; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Tổng tiền hàng:</span>
+                            <strong id="lbl_tong_tien">0 đ</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--danger);">
+                            <span>Giảm giá (từ điểm):</span>
+                            <strong id="lbl_giam_gia">0 đ</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; color: var(--primary);">
+                            <span>Khách cần trả:</span>
+                            <strong id="lbl_khach_tra">0 đ</strong>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--success); margin-top: 0.5rem; text-align: right;">
+                            Sẽ tích lũy: <span id="lbl_tich_diem">0</span> điểm
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Chọn Sản phẩm</label>
-                    <select id="dh_san_pham" class="form-control" required></select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Số lượng</label>
-                    <input type="number" id="dh_so_luong" class="form-control" value="1" min="1" required>
-                </div>
-                
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="button" class="btn" style="flex: 1; border: 1px solid var(--border);" onclick="hideModal()">Hủy</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;" id="btnLuuDonHang">Hoàn tất thanh toán</button>
-                </div>
-            </form>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+                <button type="button" class="btn" style="border: 1px solid var(--border);" onclick="hideModal()">Hủy</button>
+                <button type="button" class="btn btn-primary" style="padding: 0.5rem 2rem; font-size: 1.1rem;" id="btnLuuDonHang" onclick="submitOrder()">Thanh toán ngay</button>
+            </div>
         </div>
     </div>
 
@@ -106,6 +158,10 @@
             document.getElementById('menu-chi-nhanh').style.display = 'block';
             document.getElementById('menu-nguoi-dung').style.display = 'block';
         }
+
+        let customers = [];
+        let products = [];
+        let cart = [];
 
         async function loadData() {
             try {
@@ -120,14 +176,15 @@
 
                 res.data.sort((a,b) => b.id - a.id).forEach(dh => {
                     const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(dh.tongTien);
+                    const giamGia = dh.giamGia > 0 ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(dh.giamGia) : '0 đ';
                     const date = new Date(dh.ngayTao).toLocaleString('vi-VN');
-                    const tenKhach = dh.khachHang ? dh.khachHang.hoTen : 'Khách lẻ';
+                    const tenKhach = dh.khachHang ? dh.khachHang.hoTen + '<br><small>' + dh.khachHang.soDienThoai + '</small>' : 'Khách vãng lai';
                     tbody.innerHTML += `
                         <tr>
                             <td style="font-weight:600; color:var(--primary)">${dh.maDonHang}</td>
                             <td>${tenKhach}</td>
-                            <td style="color:var(--danger)">${price}</td>
-                            <td>${dh.trangThaiThanhToan}</td>
+                            <td style="color:var(--danger)">${giamGia}</td>
+                            <td style="font-weight:bold; color:var(--text-main)">${price}</td>
                             <td>${date}</td>
                         </tr>
                     `;
@@ -142,8 +199,14 @@
         async function showModal() {
             document.getElementById('modalError').style.display = 'none';
             document.getElementById('orderModal').style.display = 'flex';
+            cart = [];
+            document.getElementById('dh_kh_sdt').value = '';
+            document.getElementById('dh_kh_ten').value = '';
+            document.getElementById('dh_diem_su_dung').value = 0;
+            document.getElementById('pointsInfo').style.display = 'none';
+            document.getElementById('usePointsGroup').style.display = 'none';
+            renderCart();
             
-            // Load branches, customers and products
             try {
                 const [cnRes, khRes, spRes] = await Promise.all([
                     goiApi('/chi-nhanh'),
@@ -151,58 +214,143 @@
                     goiApi('/san-pham')
                 ]);
                 
+                customers = khRes.data;
+                products = spRes.data.filter(s => s.hoatDong && s.soLuongTon > 0);
+                
                 const cnSelect = document.getElementById('dh_chi_nhanh');
                 cnSelect.innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join('');
                 
-                const khSelect = document.getElementById('dh_khach_hang');
-                khSelect.innerHTML = '<option value="">-- Khách lẻ --</option>' + khRes.data.map(k => `<option value="${k.id}">${k.hoTen} - ${k.soDienThoai}</option>`).join('');
-                
-                const spSelect = document.getElementById('dh_san_pham');
-                spSelect.innerHTML = spRes.data
-                    .filter(s => s.hoatDong && s.soLuongTon > 0)
-                    .map(s => `<option value="${s.id}">${s.tenSanPham} (Tồn: ${s.soLuongTon} - Giá: ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ)</option>`).join('');
+                const spSelect = document.getElementById('sp_select');
+                spSelect.innerHTML = products.map(s => `<option value="${s.id}">${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ</option>`).join('');
             } catch (err) {
                 document.getElementById('modalError').textContent = "Không tải được dữ liệu: " + err.message;
                 document.getElementById('modalError').style.display = 'block';
             }
         }
 
+        function checkCustomer() {
+            const sdt = document.getElementById('dh_kh_sdt').value.trim();
+            const kh = customers.find(c => c.soDienThoai === sdt);
+            if (kh) {
+                document.getElementById('dh_kh_ten').value = kh.hoTen;
+                document.getElementById('dh_kh_diem').textContent = kh.diemTichLuy || 0;
+                document.getElementById('pointsInfo').style.display = 'block';
+                if (kh.diemTichLuy > 0) {
+                    document.getElementById('usePointsGroup').style.display = 'block';
+                    document.getElementById('dh_diem_su_dung').max = kh.diemTichLuy;
+                }
+            } else {
+                document.getElementById('pointsInfo').style.display = 'none';
+                document.getElementById('usePointsGroup').style.display = 'none';
+                document.getElementById('dh_diem_su_dung').value = 0;
+            }
+            updateTotal();
+        }
+
+        function addToCart() {
+            const spId = parseInt(document.getElementById('sp_select').value);
+            const qty = parseInt(document.getElementById('sp_qty').value);
+            if (!spId || qty < 1) return;
+            
+            const prod = products.find(p => p.id === spId);
+            const exist = cart.find(item => item.spId === spId);
+            if (exist) {
+                if (exist.qty + qty > prod.soLuongTon) {
+                    alert('Vượt quá số lượng tồn kho!');
+                    return;
+                }
+                exist.qty += qty;
+            } else {
+                if (qty > prod.soLuongTon) {
+                    alert('Vượt quá số lượng tồn kho!');
+                    return;
+                }
+                cart.push({ spId, name: prod.tenSanPham, price: prod.giaBan, qty });
+            }
+            renderCart();
+        }
+
+        function removeCart(spId) {
+            cart = cart.filter(c => c.spId !== spId);
+            renderCart();
+        }
+
+        function renderCart() {
+            const tbody = document.getElementById('cartBody');
+            if (cart.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Giỏ hàng rỗng</td></tr>';
+            } else {
+                tbody.innerHTML = cart.map(c => `
+                    <tr>
+                        <td style="font-size:0.9rem">${c.name}</td>
+                        <td>${c.qty}</td>
+                        <td>${new Intl.NumberFormat('vi-VN').format(c.price)}đ</td>
+                        <td><button class="btn" style="color:var(--danger); padding:2px 5px;" onclick="removeCart(${c.spId})">X</button></td>
+                    </tr>
+                `).join('');
+            }
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const sum = cart.reduce((acc, val) => acc + (val.price * val.qty), 0);
+            let pts = parseInt(document.getElementById('dh_diem_su_dung').value) || 0;
+            
+            // Validate points
+            const currentPts = parseInt(document.getElementById('dh_kh_diem').textContent) || 0;
+            if (pts > currentPts) { pts = currentPts; document.getElementById('dh_diem_su_dung').value = pts; }
+            
+            let giam = pts * 1000;
+            if (giam > sum) giam = sum;
+
+            const final = sum - giam;
+            const diemMoi = Math.floor(final / 10000);
+
+            document.getElementById('lbl_tong_tien').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sum);
+            document.getElementById('lbl_giam_gia').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(giam);
+            document.getElementById('lbl_khach_tra').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(final);
+            document.getElementById('lbl_tich_diem').textContent = diemMoi;
+        }
+
         function hideModal() {
             document.getElementById('orderModal').style.display = 'none';
         }
 
-        document.getElementById('orderForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        async function submitOrder() {
+            if (cart.length === 0) {
+                alert("Giỏ hàng rỗng, không thể tạo đơn!");
+                return;
+            }
+
             const btn = document.getElementById('btnLuuDonHang');
             btn.disabled = true;
             btn.textContent = "Đang xử lý...";
             
-            const khId = document.getElementById('dh_khach_hang').value;
             const data = {
-                khachHangId: khId ? parseInt(khId) : null,
                 chiNhanhId: parseInt(document.getElementById('dh_chi_nhanh').value),
-                chiTiet: [
-                    {
-                        sanPhamId: parseInt(document.getElementById('dh_san_pham').value),
-                        soLuong: parseInt(document.getElementById('dh_so_luong').value)
-                    }
-                ]
+                soDienThoai: document.getElementById('dh_kh_sdt').value.trim(),
+                tenKhachHang: document.getElementById('dh_kh_ten').value.trim(),
+                diemSuDung: parseInt(document.getElementById('dh_diem_su_dung').value) || 0,
+                chiTiet: cart.map(c => ({
+                    sanPhamId: c.spId,
+                    soLuong: c.qty
+                }))
             };
 
             try {
                 await goiApi('/don-hang', { method: 'POST', body: JSON.stringify(data) });
                 hideModal();
                 loadData();
-                alert("Tạo đơn hàng thành công!");
+                alert("Thanh toán đơn hàng thành công!");
             } catch (err) {
                 const errDiv = document.getElementById('modalError');
                 errDiv.textContent = err.message;
                 errDiv.style.display = 'block';
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Hoàn tất thanh toán";
+                btn.textContent = "Thanh toán ngay";
             }
-        });
+        }
 
         document.addEventListener('DOMContentLoaded', loadData);
     </script>

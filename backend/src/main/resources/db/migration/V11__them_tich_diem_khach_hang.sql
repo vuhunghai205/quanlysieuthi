@@ -1,0 +1,2 @@
+ALTER TABLE khach_hang ADD COLUMN diem_tich_luy INT DEFAULT 0;
+ALTER TABLE don_hang ADD COLUMN giam_gia DECIMAL(15, 2) DEFAULT 0;

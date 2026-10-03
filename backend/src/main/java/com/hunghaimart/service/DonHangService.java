@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -43,10 +44,24 @@ public class DonHangService {
         ChiNhanh chiNhanh = chiNhanhRepository.findById(request.getChiNhanhId())
                 .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh không tồn tại"));
 
+        // Xử lý Khách hàng (Tạo mới hoặc Lấy cũ)
         KhachHang khachHang = null;
-        if (request.getKhachHangId() != null) {
-            khachHang = khachHangRepository.findById(request.getKhachHangId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Khách hàng không tồn tại"));
+        if (request.getSoDienThoai() != null && !request.getSoDienThoai().trim().isEmpty()) {
+            Optional<KhachHang> khOpt = khachHangRepository.findBySoDienThoai(request.getSoDienThoai());
+            if (khOpt.isPresent()) {
+                khachHang = khOpt.get();
+                // Cập nhật tên nếu có truyền
+                if (request.getTenKhachHang() != null && !request.getTenKhachHang().trim().isEmpty()) {
+                    khachHang.setHoTen(request.getTenKhachHang());
+                }
+            } else {
+                khachHang = KhachHang.builder()
+                        .hoTen(request.getTenKhachHang() != null && !request.getTenKhachHang().trim().isEmpty() ? request.getTenKhachHang() : "Khách hàng mới")
+                        .soDienThoai(request.getSoDienThoai())
+                        .diemTichLuy(0)
+                        .build();
+                khachHang = khachHangRepository.save(khachHang);
+            }
         }
 
         DonHang donHang = DonHang.builder()
@@ -57,10 +72,11 @@ public class DonHangService {
                 .trangThai("HOAN_THANH")
                 .trangThaiThanhToan("DA_THANH_TOAN")
                 .tongTien(BigDecimal.ZERO)
+                .giamGia(BigDecimal.ZERO)
                 .chiTietDonHangs(new ArrayList<>())
                 .build();
 
-        BigDecimal tongTien = BigDecimal.ZERO;
+        BigDecimal tongTienHang = BigDecimal.ZERO;
 
         for (ChiTietDonHangRequest ctReq : request.getChiTiet()) {
             SanPham sp = sanPhamRepository.findById(ctReq.getSanPhamId())
@@ -71,7 +87,7 @@ public class DonHangService {
             }
             
             if (sp.getSoLuongTon() < ctReq.getSoLuong()) {
-                throw new BusinessException("Sản phẩm " + sp.getTenSanPham() + " không đủ số lượng tồn kho");
+                throw new BusinessException("Sản phẩm " + sp.getTenSanPham() + " không đủ tồn kho (Còn: " + sp.getSoLuongTon() + ")");
             }
 
             // Trừ tồn kho
@@ -90,7 +106,7 @@ public class DonHangService {
             giaoDichTonKhoRepository.save(xuatKho);
 
             BigDecimal tamTinh = sp.getGiaBan().multiply(BigDecimal.valueOf(ctReq.getSoLuong()));
-            tongTien = tongTien.add(tamTinh);
+            tongTienHang = tongTienHang.add(tamTinh);
 
             ChiTietDonHang chiTiet = ChiTietDonHang.builder()
                     .donHang(donHang)
@@ -103,7 +119,31 @@ public class DonHangService {
             donHang.getChiTietDonHangs().add(chiTiet);
         }
 
-        donHang.setTongTien(tongTien);
+        // Xử lý giảm giá từ điểm
+        BigDecimal giamGia = BigDecimal.ZERO;
+        if (khachHang != null && request.getDiemSuDung() != null && request.getDiemSuDung() > 0) {
+            if (khachHang.getDiemTichLuy() < request.getDiemSuDung()) {
+                throw new BusinessException("Khách hàng không đủ điểm tích lũy");
+            }
+            // Quy đổi 1 điểm = 1000 VNĐ
+            giamGia = BigDecimal.valueOf(request.getDiemSuDung() * 1000L);
+            if (giamGia.compareTo(tongTienHang) > 0) {
+                giamGia = tongTienHang; // Không giảm vượt quá giá trị đơn hàng
+            }
+            khachHang.setDiemTichLuy(khachHang.getDiemTichLuy() - request.getDiemSuDung());
+        }
+
+        BigDecimal tongTienThanhToan = tongTienHang.subtract(giamGia);
+        donHang.setTongTien(tongTienThanhToan);
+        donHang.setGiamGia(giamGia);
+
+        // Tích điểm mới (Ví dụ: 10,000 VND = 1 điểm)
+        if (khachHang != null && tongTienThanhToan.compareTo(BigDecimal.ZERO) > 0) {
+            int diemMoi = tongTienThanhToan.divide(BigDecimal.valueOf(10000), 0, java.math.RoundingMode.DOWN).intValue();
+            khachHang.setDiemTichLuy(khachHang.getDiemTichLuy() + diemMoi);
+            khachHangRepository.save(khachHang);
+        }
+
         return donHangRepository.save(donHang);
     }
 }

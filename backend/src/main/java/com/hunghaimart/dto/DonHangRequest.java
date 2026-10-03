@@ -9,7 +9,12 @@ import java.util.List;
 
 @Data
 public class DonHangRequest {
-    private Long khachHangId;
+    // Thông tin khách hàng (Nếu khách vãng lai thì để trống)
+    private String tenKhachHang;
+    private String soDienThoai;
+    
+    // Số điểm muốn dùng (1 điểm = 1000 VND)
+    private Integer diemSuDung;
 
     @NotNull(message = "Chi nhánh không được để trống")
     private Long chiNhanhId;

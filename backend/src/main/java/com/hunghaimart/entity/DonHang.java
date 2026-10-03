@@ -36,6 +36,8 @@ public class DonHang {
 
     @Column(name = "tong_tien", nullable = false)
     private BigDecimal tongTien;
+    @Column(name = "giam_gia")
+    private BigDecimal giamGia;
 
     @Column(name = "trang_thai", nullable = false)
     private String trangThai;

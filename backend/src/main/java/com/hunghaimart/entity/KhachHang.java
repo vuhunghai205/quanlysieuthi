@@ -25,6 +25,8 @@ public class KhachHang {
 
     @Column(name = "dia_chi")
     private String diaChi;
+    @Column(name = "diem_tich_luy")
+    private Integer diemTichLuy;
 
     @Column(name = "ngay_tao", updatable = false)
     private LocalDateTime ngayTao;
@@ -35,6 +37,7 @@ public class KhachHang {
     @PrePersist
     protected void onCreate() {
         ngayTao = LocalDateTime.now();
+        if (diemTichLuy == null) diemTichLuy = 0;
         ngayCapNhat = LocalDateTime.now();
     }
 
