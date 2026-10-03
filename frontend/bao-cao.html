@@ -6,6 +6,42 @@
     <link rel="stylesheet" href="css/bien.css">
     <link rel="stylesheet" href="css/bo-cuc.css">
     <link rel="stylesheet" href="css/thanh-phan.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .stat-title {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .stat-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .val-money { color: var(--primary); font-weight: 600; }
+        .val-profit { color: var(--success); font-weight: 600; }
+        .val-num { color: var(--secondary); font-weight: 600; }
+        .val-err { color: var(--danger); font-weight: 600; }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -31,25 +67,44 @@
                 <div><button onclick="logout()" class="btn">Đăng xuất</button></div>
             </header>
             
-            <div class="content-body" id="baoCaoContent">
-                <div class="alert alert-danger" id="errorAlert" style="display:none;"></div>
+            <div class="content-body">
+                <div id="errorAlert" class="alert alert-danger" style="display:none;"></div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                    <div class="card" style="margin-bottom: 0;">
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Doanh thu tháng</div>
-                        <div id="doanhThuThang" style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">-</div>
+                <div class="dashboard-grid">
+                    <!-- Doanh thu -->
+                    <div class="stat-card">
+                        <div class="stat-title">💰 Doanh thu</div>
+                        <div class="stat-row"><span>Hôm nay:</span> <span class="val-money" id="dt_ngay">...</span></div>
+                        <div class="stat-row"><span>Tuần này:</span> <span class="val-money" id="dt_tuan">...</span></div>
+                        <div class="stat-row"><span>Tháng này:</span> <span class="val-money" id="dt_thang">...</span></div>
+                        <div class="stat-row"><span>Năm nay:</span> <span class="val-money" id="dt_nam">...</span></div>
                     </div>
-                    <div class="card" style="margin-bottom: 0;">
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Lợi nhuận</div>
-                        <div id="loiNhuan" style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">-</div>
+
+                    <!-- Lợi nhuận -->
+                    <div class="stat-card">
+                        <div class="stat-title">📈 Lợi nhuận gộp</div>
+                        <div class="stat-row"><span>Hôm nay:</span> <span class="val-profit" id="ln_ngay">...</span></div>
+                        <div class="stat-row"><span>Tuần này:</span> <span class="val-profit" id="ln_tuan">...</span></div>
+                        <div class="stat-row"><span>Tháng này:</span> <span class="val-profit" id="ln_thang">...</span></div>
+                        <div class="stat-row"><span>Năm nay:</span> <span class="val-profit" id="ln_nam">...</span></div>
                     </div>
-                    <div class="card" style="margin-bottom: 0;">
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Đơn hoàn tất</div>
-                        <div id="donHoanTat" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-top: 0.5rem;">-</div>
+
+                    <!-- Đơn hàng -->
+                    <div class="stat-card">
+                        <div class="stat-title">✅ Đơn hoàn tất</div>
+                        <div class="stat-row"><span>Hôm nay:</span> <span class="val-num" id="dh_ngay">...</span></div>
+                        <div class="stat-row"><span>Tuần này:</span> <span class="val-num" id="dh_tuan">...</span></div>
+                        <div class="stat-row"><span>Tháng này:</span> <span class="val-num" id="dh_thang">...</span></div>
+                        <div class="stat-row"><span>Năm nay:</span> <span class="val-num" id="dh_nam">...</span></div>
                     </div>
-                    <div class="card" style="margin-bottom: 0;">
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Tỷ lệ hủy</div>
-                        <div id="tyLeHuy" style="font-size: 1.5rem; font-weight: 700; color: var(--danger); margin-top: 0.5rem;">-</div>
+
+                    <!-- Tỷ lệ hủy -->
+                    <div class="stat-card">
+                        <div class="stat-title">❌ Tỷ lệ hủy đơn</div>
+                        <div class="stat-row"><span>Hôm nay:</span> <span class="val-err" id="huy_ngay">...</span></div>
+                        <div class="stat-row"><span>Tuần này:</span> <span class="val-err" id="huy_tuan">...</span></div>
+                        <div class="stat-row"><span>Tháng này:</span> <span class="val-err" id="huy_thang">...</span></div>
+                        <div class="stat-row"><span>Năm nay:</span> <span class="val-err" id="huy_nam">...</span></div>
                     </div>
                 </div>
             </div>
@@ -63,28 +118,43 @@
         if (user && user.role === 'ADMIN') {
             document.getElementById('menu-chi-nhanh').style.display = 'block';
             document.getElementById('menu-nguoi-dung').style.display = 'block';
-            if(document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
-        }
-
-        if (user && user.role === 'STAFF') {
-            document.getElementById('baoCaoContent').innerHTML = '<div class="alert alert-danger" style="display:block">Nhân viên không được xem báo cáo tài chính chi tiết.</div>';
-        } else {
-            loadData();
+            if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
         }
 
         async function loadData() {
             try {
                 const res = await goiApi('/bao-cao/tong-quan');
-                document.getElementById('doanhThuThang').textContent = res.data.doanhThuThang;
-                document.getElementById('loiNhuan').textContent = res.data.loiNhuan;
-                document.getElementById('donHoanTat').textContent = res.data.donHoanTat;
-                document.getElementById('tyLeHuy').textContent = res.data.tyLeHuy;
+                const data = res.data;
+                const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+
+                document.getElementById('dt_ngay').textContent = fmt.format(data.doanhThu.ngay);
+                document.getElementById('dt_tuan').textContent = fmt.format(data.doanhThu.tuan);
+                document.getElementById('dt_thang').textContent = fmt.format(data.doanhThu.thang);
+                document.getElementById('dt_nam').textContent = fmt.format(data.doanhThu.nam);
+
+                document.getElementById('ln_ngay').textContent = fmt.format(data.loiNhuan.ngay);
+                document.getElementById('ln_tuan').textContent = fmt.format(data.loiNhuan.tuan);
+                document.getElementById('ln_thang').textContent = fmt.format(data.loiNhuan.thang);
+                document.getElementById('ln_nam').textContent = fmt.format(data.loiNhuan.nam);
+
+                document.getElementById('dh_ngay').textContent = data.donHoanTat.ngay;
+                document.getElementById('dh_tuan').textContent = data.donHoanTat.tuan;
+                document.getElementById('dh_thang').textContent = data.donHoanTat.thang;
+                document.getElementById('dh_nam').textContent = data.donHoanTat.nam;
+
+                document.getElementById('huy_ngay').textContent = data.tyLeHuy.ngay;
+                document.getElementById('huy_tuan').textContent = data.tyLeHuy.tuan;
+                document.getElementById('huy_thang').textContent = data.tyLeHuy.thang;
+                document.getElementById('huy_nam').textContent = data.tyLeHuy.nam;
+                
             } catch (err) {
                 const alert = document.getElementById('errorAlert');
                 alert.textContent = err.message;
                 alert.style.display = 'block';
             }
         }
+        
+        document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
