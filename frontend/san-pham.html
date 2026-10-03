@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sản phẩm - Hùng Hải Mart</title>
+    <link rel="stylesheet" href="css/bien.css">
+    <link rel="stylesheet" href="css/bo-cuc.css">
+    <link rel="stylesheet" href="css/thanh-phan.css">
+    <style>
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
+        .table th { background-color: var(--mint); color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">Hùng Hải Mart</div>
+            <nav class="sidebar-nav">
+                <a href="tong-quan.html" class="nav-item">Tổng quan</a>
+                <a href="san-pham.html" class="nav-item active">Sản phẩm</a>
+                <a href="don-hang.html" class="nav-item">Đơn hàng</a>
+                <a href="ton-kho.html" class="nav-item">Tồn kho</a>
+                <a href="khach-hang.html" class="nav-item">Khách hàng</a>
+                <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
+                <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div style="font-weight: 500;">Quản lý Sản phẩm</div>
+                <div><button onclick="logout()" class="btn">Đăng xuất</button></div>
+            </header>
+            
+            <div class="content-body">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 class="card-title" style="margin: 0;">Danh sách sản phẩm</h3>
+                        <button class="btn btn-primary" id="btnAddProduct" style="display:none;">+ Thêm sản phẩm</button>
+                    </div>
+                    
+                    <div id="errorAlert" class="alert alert-danger"></div>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã SP</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Giá bán</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="6">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        const user = getUser();
+        if (user && user.role === 'ADMIN') {
+            document.getElementById('menu-chi-nhanh').style.display = 'block';
+            document.getElementById('menu-nguoi-dung').style.display = 'block';
+        }
+        if (user && (user.role === 'ADMIN' || user.role === 'MANAGER')) {
+            document.getElementById('btnAddProduct').style.display = 'block';
+        }
+
+        async function loadData() {
+            try {
+                const res = await goiApi('/san-pham');
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                
+                if (!res.data || res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Chưa có sản phẩm nào.</td></tr>';
+                    return;
+                }
+
+                res.data.forEach(sp => {
+                    const status = sp.hoatDong ? '<span style="color:var(--primary)">Kinh doanh</span>' : '<span style="color:var(--danger)">Ngừng</span>';
+                    const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sp.giaBan);
+                    
+                    let actions = '';
+                    if (user.role === 'ADMIN' || user.role === 'MANAGER') {
+                        actions = `<button class="btn" style="border: 1px solid var(--border); padding: 0.25rem 0.5rem; font-size: 0.75rem;">Sửa</button>`;
+                    }
+                    if (user.role === 'ADMIN') {
+                        actions += ` <button class="btn" style="border: 1px solid var(--danger); color: var(--danger); padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deleteProduct(${sp.id})">Xóa</button>`;
+                    }
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${sp.maSanPham}</td>
+                            <td>${sp.tenSanPham}</td>
+                            <td>${price}</td>
+                            <td>${sp.soLuongTon} ${sp.donVi || ''}</td>
+                            <td>${status}</td>
+                            <td>${actions || '-'}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                const alert = document.getElementById('errorAlert');
+                alert.textContent = err.message;
+                alert.style.display = 'block';
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) return;
+            try {
+                await goiApi('/san-pham/' + id, { method: 'DELETE' });
+                alert('Xóa thành công!');
+                loadData();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

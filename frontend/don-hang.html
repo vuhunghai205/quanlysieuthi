@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đơn hàng - Hùng Hải Mart</title>
+    <link rel="stylesheet" href="css/bien.css">
+    <link rel="stylesheet" href="css/bo-cuc.css">
+    <link rel="stylesheet" href="css/thanh-phan.css">
+    <style>
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
+        .table th { background-color: var(--mint); color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">Hùng Hải Mart</div>
+            <nav class="sidebar-nav">
+                <a href="tong-quan.html" class="nav-item">Tổng quan</a>
+                <a href="san-pham.html" class="nav-item">Sản phẩm</a>
+                <a href="don-hang.html" class="nav-item active">Đơn hàng</a>
+                <a href="ton-kho.html" class="nav-item">Tồn kho</a>
+                <a href="khach-hang.html" class="nav-item">Khách hàng</a>
+                <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
+                <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div style="font-weight: 500;">Quản lý Đơn hàng</div>
+                <div><button onclick="logout()" class="btn">Đăng xuất</button></div>
+            </header>
+            
+            <div class="content-body">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 class="card-title" style="margin: 0;">Lịch sử đơn hàng</h3>
+                        <button class="btn btn-primary">+ Tạo đơn hàng</button>
+                    </div>
+                    
+                    <div id="errorAlert" class="alert alert-danger"></div>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Thanh toán</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="5">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        const user = getUser();
+        if (user && user.role === 'ADMIN') {
+            document.getElementById('menu-chi-nhanh').style.display = 'block';
+            document.getElementById('menu-nguoi-dung').style.display = 'block';
+        }
+
+        async function loadData() {
+            try {
+                const res = await goiApi('/don-hang');
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                
+                if (!res.data || res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Chưa có đơn hàng nào.</td></tr>';
+                    return;
+                }
+
+                res.data.forEach(dh => {
+                    const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(dh.tongTien);
+                    const date = new Date(dh.ngayTao).toLocaleString('vi-VN');
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:600; color:var(--primary)">${dh.maDonHang}</td>
+                            <td style="color:var(--danger)">${price}</td>
+                            <td>${dh.trangThai}</td>
+                            <td>${dh.trangThaiThanhToan}</td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                const alert = document.getElementById('errorAlert');
+                alert.textContent = err.message;
+                alert.style.display = 'block';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

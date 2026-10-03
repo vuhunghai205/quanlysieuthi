@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Khách hàng - Hùng Hải Mart</title>
+    <link rel="stylesheet" href="css/bien.css">
+    <link rel="stylesheet" href="css/bo-cuc.css">
+    <link rel="stylesheet" href="css/thanh-phan.css">
+    <style>
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
+        .table th { background-color: var(--mint); color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">Hùng Hải Mart</div>
+            <nav class="sidebar-nav">
+                <a href="tong-quan.html" class="nav-item">Tổng quan</a>
+                <a href="san-pham.html" class="nav-item">Sản phẩm</a>
+                <a href="don-hang.html" class="nav-item">Đơn hàng</a>
+                <a href="ton-kho.html" class="nav-item">Tồn kho</a>
+                <a href="khach-hang.html" class="nav-item active">Khách hàng</a>
+                <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
+                <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div style="font-weight: 500;">Quản lý Khách hàng</div>
+                <div><button onclick="logout()" class="btn">Đăng xuất</button></div>
+            </header>
+            
+            <div class="content-body">
+                <div class="card">
+                    <h3 class="card-title">Danh sách khách hàng</h3>
+                    <div id="errorAlert" class="alert alert-danger"></div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Họ tên</th>
+                                <th>Số điện thoại</th>
+                                <th>Địa chỉ</th>
+                                <th>Ngày tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="4">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        const user = getUser();
+        if (user && user.role === 'ADMIN') {
+            document.getElementById('menu-chi-nhanh').style.display = 'block';
+            document.getElementById('menu-nguoi-dung').style.display = 'block';
+        }
+
+        async function loadData() {
+            try {
+                const res = await goiApi('/khach-hang');
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                
+                if (!res.data || res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Chưa có khách hàng.</td></tr>';
+                    return;
+                }
+
+                res.data.forEach(kh => {
+                    const date = new Date(kh.ngayTao).toLocaleDateString('vi-VN');
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${kh.hoTen}</td>
+                            <td>${kh.soDienThoai}</td>
+                            <td>${kh.diaChi || '-'}</td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                const alert = document.getElementById('errorAlert');
+                alert.textContent = err.message;
+                alert.style.display = 'block';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
