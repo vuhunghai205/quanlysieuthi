@@ -2,6 +2,7 @@ package com.hunghaimart.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,7 +25,7 @@ public class NguoiDung {
     private String email;
 
     @Column(name = "mat_khau", nullable = false)
-    import com.fasterxml.jackson.annotation.JsonIgnore;
+
     @JsonIgnore
     private String matKhau;
 
