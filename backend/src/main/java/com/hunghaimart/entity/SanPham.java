@@ -30,6 +30,9 @@ public class SanPham {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "danh_muc_id")
     private DanhMuc danhMuc;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "nha_cung_cap_id")
+    private NhaCungCap nhaCungCap;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chi_nhanh_id")

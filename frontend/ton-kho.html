@@ -10,6 +10,8 @@
         .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
         .table th { background-color: var(--mint); color: var(--primary); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;}
     </style>
 </head>
 <body>
@@ -23,6 +25,7 @@
                 <a href="don-hang.html" class="nav-item">Đơn hàng</a>
                 <a href="ton-kho.html" class="nav-item active">Tồn kho</a>
                 <a href="khach-hang.html" class="nav-item">Khách hàng</a>
+                <a href="bao-cao.html" class="nav-item">Báo cáo</a>
                 <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
                 <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
             </nav>
@@ -38,9 +41,9 @@
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 class="card-title" style="margin: 0;">Báo cáo tồn kho hiện tại</h3>
-                        <div id="actionButtons" style="display:none;">
-                            <button class="btn btn-primary" onclick="showNhapKho()">+ Nhập kho</button>
-                            <button class="btn" style="border: 1px solid var(--warning); color: var(--warning);">Điều chỉnh</button>
+                        <div>
+                            <button class="btn btn-primary" onclick="showModal('NHAP')">+ Nhập kho từ NCC</button>
+                            <button class="btn" style="border: 1px solid var(--warning); color: var(--warning);" onclick="showModal('XUAT')">Xuất/Điều chỉnh</button>
                         </div>
                     </div>
                     
@@ -51,18 +54,55 @@
                             <tr>
                                 <th>Mã SP</th>
                                 <th>Tên sản phẩm</th>
+                                <th>Nhà cung cấp</th>
                                 <th>Tồn hiện tại</th>
                                 <th>Đơn vị</th>
                                 <th>Cảnh báo</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr><td colspan="5">Đang tải...</td></tr>
+                            <tr><td colspan="6">Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal" id="tonKhoModal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-bottom: 1rem; color: var(--primary);">Nhập Kho</h3>
+            <div id="modalError" class="alert alert-danger"></div>
+            <form id="tonKhoForm">
+                <input type="hidden" id="loai_gd">
+                
+                <div class="form-group">
+                    <label class="form-label">Chi nhánh</label>
+                    <select id="tk_chi_nhanh" class="form-control" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Sản phẩm</label>
+                    <select id="tk_san_pham" class="form-control" required></select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số lượng</label>
+                    <input type="number" id="tk_so_luong" class="form-control" value="10" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ghi chú</label>
+                    <input type="text" id="tk_ghi_chu" class="form-control" placeholder="Lý do nhập/xuất...">
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn" style="flex: 1; border: 1px solid var(--border);" onclick="hideModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;" id="btnSubmit">Lưu giao dịch</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="js/api.js"></script>
@@ -73,38 +113,32 @@
             document.getElementById('menu-chi-nhanh').style.display = 'block';
             document.getElementById('menu-nguoi-dung').style.display = 'block';
         }
-        if (user && (user.role === 'ADMIN' || user.role === 'MANAGER')) {
-            document.getElementById('actionButtons').style.display = 'block';
-        }
 
         async function loadData() {
             try {
-                const res = await goiApi('/ton-kho');
+                const res = await goiApi('/san-pham');
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
                 
                 if (!res.data || res.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Chưa có dữ liệu.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Chưa có dữ liệu tồn kho.</td></tr>';
                     return;
                 }
 
                 res.data.forEach(sp => {
-                    let alertHtml = '';
-                    if (sp.soLuongTon <= 0) {
-                        alertHtml = '<span style="color:var(--danger); font-weight:bold;">Hết hàng</span>';
-                    } else if (sp.soLuongTon <= sp.mucTonToiThieu) {
-                        alertHtml = '<span style="color:var(--warning); font-weight:bold;">Sắp hết</span>';
-                    } else {
-                        alertHtml = '<span style="color:var(--primary);">Bình thường</span>';
-                    }
+                    const cb = sp.soLuongTon <= sp.mucTonToiThieu 
+                        ? '<span style="color:var(--danger)">Sắp hết hàng</span>' 
+                        : '<span style="color:var(--success)">Bình thường</span>';
+                    const ncc = sp.nhaCungCap ? sp.nhaCungCap.tenNhaCungCap : '-';
                     
                     tbody.innerHTML += `
                         <tr>
                             <td>${sp.maSanPham}</td>
                             <td>${sp.tenSanPham}</td>
+                            <td><small>${ncc}</small></td>
                             <td style="font-weight:bold">${sp.soLuongTon}</td>
                             <td>${sp.donVi || ''}</td>
-                            <td>${alertHtml}</td>
+                            <td>${cb}</td>
                         </tr>
                     `;
                 });
@@ -114,11 +148,71 @@
                 alert.style.display = 'block';
             }
         }
-        
-        function showNhapKho() {
-            alert('Chức năng nhập kho đang được triển khai popup!');
+
+        async function showModal(loai) {
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('tonKhoModal').style.display = 'flex';
+            document.getElementById('loai_gd').value = loai;
+            
+            if (loai === 'NHAP') {
+                document.getElementById('modalTitle').textContent = '📦 Nhập kho từ Nhà Cung Cấp';
+            } else {
+                document.getElementById('modalTitle').textContent = '⚠️ Xuất / Điều chỉnh kho';
+            }
+
+            try {
+                const [cnRes, spRes] = await Promise.all([
+                    goiApi('/chi-nhanh'),
+                    goiApi('/san-pham')
+                ]);
+                
+                const cnSelect = document.getElementById('tk_chi_nhanh');
+                cnSelect.innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join('');
+                
+                const spSelect = document.getElementById('tk_san_pham');
+                spSelect.innerHTML = spRes.data.map(s => {
+                    const ncc = s.nhaCungCap ? s.nhaCungCap.tenNhaCungCap : '';
+                    return `<option value="${s.id}">${s.tenSanPham} (Tồn: ${s.soLuongTon}) ${ncc ? ' - NCC: ' + ncc : ''}</option>`;
+                }).join('');
+            } catch (err) {
+                document.getElementById('modalError').textContent = "Không tải được dữ liệu: " + err.message;
+                document.getElementById('modalError').style.display = 'block';
+            }
         }
 
+        function hideModal() {
+            document.getElementById('tonKhoModal').style.display = 'none';
+        }
+
+        document.getElementById('tonKhoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.textContent = "Đang xử lý...";
+            
+            const data = {
+                sanPhamId: parseInt(document.getElementById('tk_san_pham').value),
+                chiNhanhId: parseInt(document.getElementById('tk_chi_nhanh').value),
+                soLuong: parseInt(document.getElementById('tk_so_luong').value),
+                loaiGiaoDich: document.getElementById('loai_gd').value,
+                ghiChu: document.getElementById('tk_ghi_chu').value
+            };
+
+            try {
+                await goiApi('/ton-kho/giao-dich', { method: 'POST', body: JSON.stringify(data) });
+                hideModal();
+                loadData();
+                alert("Lưu giao dịch thành công!");
+            } catch (err) {
+                const errDiv = document.getElementById('modalError');
+                errDiv.textContent = err.message;
+                errDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Lưu giao dịch";
+            }
+        });
+        
         document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
