@@ -43,7 +43,7 @@ public class DonHang {
     @Column(name = "trang_thai_thanh_toan", nullable = false)
     private String trangThaiThanhToan;
 
-    @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ChiTietDonHang> chiTietDonHangs;
 
     @Column(name = "ngay_tao", updatable = false)
