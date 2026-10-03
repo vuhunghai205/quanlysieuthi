@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=dang-nhap.html">
+    <title>Hùng Hải Mart</title>
+</head>
+<body>
+    <script>
+        if (localStorage.getItem("hung_hai_mart_access_token")) {
+            window.location.href = "tong-quan.html";
+        } else {
+            window.location.href = "dang-nhap.html";
+        }
+    </script>
+</body>
+</html>

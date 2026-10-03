@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng quan - Hùng Hải Mart</title>
+    <link rel="stylesheet" href="css/bien.css">
+    <link rel="stylesheet" href="css/bo-cuc.css">
+    <link rel="stylesheet" href="css/thanh-phan.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Hùng Hải Mart
+            </div>
+            <nav class="sidebar-nav">
+                <a href="tong-quan.html" class="nav-item active">Tổng quan</a>
+                <a href="san-pham.html" class="nav-item">Sản phẩm</a>
+                <a href="don-hang.html" class="nav-item">Đơn hàng</a>
+                <a href="ton-kho.html" class="nav-item">Tồn kho</a>
+                <a href="khach-hang.html" class="nav-item">Khách hàng</a>
+                <a href="bao-cao.html" class="nav-item">Báo cáo</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div style="font-weight: 500;">Bảng điều khiển</div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span id="userNameDisplay" style="font-size: 0.875rem;"></span>
+                    <button onclick="logout()" class="btn" style="border: 1px solid var(--border);">Đăng xuất</button>
+                </div>
+            </header>
+            
+            <div class="content-body">
+                <h2 style="margin-bottom: 1.5rem;">Tổng quan hoạt động</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Doanh thu hôm nay</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">₫24.680.000</div>
+                    </div>
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Đơn hàng mới</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning); margin-top: 0.5rem;">186</div>
+                    </div>
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Khách hàng mới</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-top: 0.5rem;">2.840</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">Xin chào!</h3>
+                    <p>Dữ liệu tổng quan thực tế sẽ được tích hợp với Backend API trong các bước tiếp theo.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = getUser();
+            if (user) {
+                document.getElementById("userNameDisplay").textContent = `${user.fullName} (${user.role})`;
+            }
+        });
+    </script>
+</body>
+</html>
