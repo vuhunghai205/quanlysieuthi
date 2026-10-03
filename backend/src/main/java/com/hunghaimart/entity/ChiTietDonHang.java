@@ -19,6 +19,8 @@ public class ChiTietDonHang {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "don_hang_id", nullable = false)
+    import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+    @JsonIgnoreProperties("chiTietDonHangs")
     private DonHang donHang;
 
     @ManyToOne(fetch = FetchType.LAZY)
