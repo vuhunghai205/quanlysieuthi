@@ -77,10 +77,11 @@
             <div id="modalError" class="alert alert-danger"></div>
             <form id="tonKhoForm">
                 <input type="hidden" id="loai_gd">
+                <input type="hidden" id="tk_chi_nhanh" value="1"> <!-- Ẩn chi nhánh đi, gán cứng = 1 -->
                 
-                <div class="form-group">
-                    <label class="form-label">Chi nhánh</label>
-                    <select id="tk_chi_nhanh" class="form-control" required></select>
+                <div class="form-group" id="group_ncc">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <select id="tk_ncc" class="form-control" onchange="filterProducts()"></select>
                 </div>
                 
                 <div class="form-group">
@@ -113,21 +114,24 @@
         if (user && user.role === 'ADMIN') {
             document.getElementById('menu-chi-nhanh').style.display = 'block';
             document.getElementById('menu-nguoi-dung').style.display = 'block';
-            if(document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
+            if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
         }
+
+        let allProducts = [];
 
         async function loadData() {
             try {
                 const res = await goiApi('/san-pham');
+                allProducts = res.data;
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
                 
-                if (!res.data || res.data.length === 0) {
+                if (!allProducts || allProducts.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Chưa có dữ liệu tồn kho.</td></tr>';
                     return;
                 }
 
-                res.data.forEach(sp => {
+                allProducts.forEach(sp => {
                     const cb = sp.soLuongTon <= sp.mucTonToiThieu 
                         ? '<span style="color:var(--danger)">Sắp hết hàng</span>' 
                         : '<span style="color:var(--success)">Bình thường</span>';
@@ -138,7 +142,7 @@
                             <td>${sp.maSanPham}</td>
                             <td>${sp.tenSanPham}</td>
                             <td><small>${ncc}</small></td>
-                            <td style="font-weight:bold">${sp.soLuongTon}</td>
+                            <td style="font-weight:bold; color:var(--primary)">${sp.soLuongTon}</td>
                             <td>${sp.donVi || ''}</td>
                             <td>${cb}</td>
                         </tr>
@@ -158,28 +162,40 @@
             
             if (loai === 'NHAP') {
                 document.getElementById('modalTitle').textContent = '📦 Nhập kho từ Nhà Cung Cấp';
+                document.getElementById('group_ncc').style.display = 'block';
             } else {
                 document.getElementById('modalTitle').textContent = '⚠️ Xuất / Điều chỉnh kho';
+                document.getElementById('group_ncc').style.display = 'none';
             }
 
             try {
-                const [cnRes, spRes] = await Promise.all([
-                    goiApi('/chi-nhanh'),
-                    goiApi('/san-pham')
-                ]);
+                const nccRes = await goiApi('/nha-cung-cap');
                 
-                const cnSelect = document.getElementById('tk_chi_nhanh');
-                cnSelect.innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join('');
+                const nccSelect = document.getElementById('tk_ncc');
+                nccSelect.innerHTML = '<option value="">-- Chọn Nhà cung cấp --</option>' + nccRes.data.map(c => `<option value="${c.id}">${c.tenNhaCungCap}</option>`).join('');
                 
-                const spSelect = document.getElementById('tk_san_pham');
-                spSelect.innerHTML = spRes.data.map(s => {
-                    const ncc = s.nhaCungCap ? s.nhaCungCap.tenNhaCungCap : '';
-                    return `<option value="${s.id}">${s.tenSanPham} (Tồn: ${s.soLuongTon}) ${ncc ? ' - NCC: ' + ncc : ''}</option>`;
-                }).join('');
+                // Mặc định hiện tất cả sản phẩm
+                filterProducts();
             } catch (err) {
                 document.getElementById('modalError').textContent = "Không tải được dữ liệu: " + err.message;
                 document.getElementById('modalError').style.display = 'block';
             }
+        }
+
+        function filterProducts() {
+            const loai = document.getElementById('loai_gd').value;
+            const nccId = document.getElementById('tk_ncc').value;
+            
+            let filtered = allProducts;
+            if (loai === 'NHAP' && nccId) {
+                filtered = allProducts.filter(p => p.nhaCungCap && p.nhaCungCap.id == nccId);
+            }
+
+            const spSelect = document.getElementById('tk_san_pham');
+            spSelect.innerHTML = filtered.map(s => {
+                const ncc = s.nhaCungCap ? s.nhaCungCap.tenNhaCungCap : '';
+                return `<option value="${s.id}">${s.tenSanPham} (Tồn: ${s.soLuongTon}) ${ncc ? ' - NCC: ' + ncc : ''}</option>`;
+            }).join('');
         }
 
         function hideModal() {
@@ -194,7 +210,7 @@
             
             const data = {
                 sanPhamId: parseInt(document.getElementById('tk_san_pham').value),
-                chiNhanhId: parseInt(document.getElementById('tk_chi_nhanh').value),
+                chiNhanhId: parseInt(document.getElementById('tk_chi_nhanh').value), // Bị ẩn nên mặc định = 1
                 soLuong: parseInt(document.getElementById('tk_so_luong').value),
                 loaiGiaoDich: document.getElementById('loai_gd').value,
                 ghiChu: document.getElementById('tk_ghi_chu').value

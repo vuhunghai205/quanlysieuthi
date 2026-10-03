@@ -169,7 +169,7 @@
             }
         }
 
-        function showModal() {
+        async function showModal() {
             document.getElementById('productForm').reset();
             document.getElementById('sp_id').value = '';
             document.getElementById('modalTitle').textContent = 'Thêm sản phẩm';
@@ -182,7 +182,7 @@
             document.getElementById('productModal').style.display = 'none';
         }
 
-        function editProduct(sp) {
+        async function editProduct(sp) {
             document.getElementById('modalTitle').textContent = 'Sửa sản phẩm';
             document.getElementById('modalError').style.display = 'none';
             document.getElementById('sp_id').value = sp.id;
