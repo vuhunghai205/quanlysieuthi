@@ -216,8 +216,9 @@
                 ghiChu: document.getElementById('tk_ghi_chu').value
             };
 
+            let endpoint = data.loaiGiaoDich === 'NHAP' ? '/ton-kho/nhap' : '/ton-kho/dieu-chinh';
             try {
-                await goiApi('/ton-kho/giao-dich', { method: 'POST', body: JSON.stringify(data) });
+                await goiApi(endpoint, { method: 'POST', body: JSON.stringify(data) });
                 hideModal();
                 loadData();
                 alert("Lưu giao dịch thành công!");
