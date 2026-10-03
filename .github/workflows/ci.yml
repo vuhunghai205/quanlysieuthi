@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: hung_hai_mart
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_USER: hung_hai_app
+          MYSQL_PASSWORD: hung_hai_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run Tests (Backend)
+      working-directory: ./backend
+      run: ./mvnw test
+
+    - name: Build Backend (skip tests for speed as they ran above)
+      working-directory: ./backend
+      run: ./mvnw clean package -DskipTests
+
+    - name: Build Backend Docker Image
+      run: docker build -t hung-hai-mart-backend ./backend
+
+    - name: Build Frontend Docker Image
+      run: docker build -t hung-hai-mart-frontend ./frontend

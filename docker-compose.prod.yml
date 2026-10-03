@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: hung-hai-mart-db-prod
+    restart: always
+    env_file:
+      - .env.production
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - hung-hai-network-prod
+
+  backend:
+    image: ghcr.io/vuhunghai/quanlysieuthi/backend:latest
+    container_name: hung-hai-mart-backend-prod
+    restart: always
+    env_file:
+      - .env.production
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hung-hai-network-prod
+
+  frontend:
+    image: ghcr.io/vuhunghai/quanlysieuthi/frontend:latest
+    container_name: hung-hai-mart-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - hung-hai-network-prod
+
+volumes:
+  mysql_data_prod:
+
+networks:
+  hung-hai-network-prod:
+    driver: bridge
