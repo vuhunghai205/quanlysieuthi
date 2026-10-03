@@ -1,0 +1,12 @@
+CREATE TABLE chi_nhanh (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ten_chi_nhanh VARCHAR(255) NOT NULL,
+    ma_chi_nhanh VARCHAR(50) NOT NULL UNIQUE,
+    thanh_pho VARCHAR(100),
+    dia_chi TEXT,
+    so_dien_thoai VARCHAR(20),
+    ten_quan_ly VARCHAR(255),
+    hoat_dong BOOLEAN DEFAULT TRUE,
+    ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ngay_cap_nhat TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
