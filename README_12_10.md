@@ -63,7 +63,7 @@ Sau khi terminal báo `Started` cho tất cả các container, hãy mở trình 
 
 **Bước 4: Đăng nhập hệ thống**
 Sử dụng tài khoản Quản trị viên (Admin) mặc định đã được tạo sẵn trong Database:
-- **Email:** `admin@hunghaimart.com`
-- **Mật khẩu:** `Admin@123`
+- **Email:** `admin@hunghaimart.vn`
+- **Mật khẩu:** `123456`
 
 *(Lưu ý: Nếu muốn xóa toàn bộ dữ liệu cũ trong Database để làm lại từ đầu, hãy chạy lệnh `sudo docker compose down -v` trước khi chạy lệnh khởi động ở Bước 2).*
