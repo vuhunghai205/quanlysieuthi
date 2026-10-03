@@ -64,6 +64,7 @@
         if (user && user.role === 'ADMIN') {
             document.getElementById('menu-chi-nhanh').style.display = 'block';
             document.getElementById('menu-nguoi-dung').style.display = 'block';
+            if(document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
         }
 
         async function loadData() {

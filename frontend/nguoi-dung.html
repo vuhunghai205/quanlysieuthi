@@ -61,6 +61,7 @@
         if (user && user.role === 'ADMIN') {
             document.getElementById('menu-chi-nhanh').style.display = 'block';
             document.getElementById('menu-nguoi-dung').style.display = 'block';
+            if(document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
         } else {
             document.querySelector('.content-body').innerHTML = '<div class="alert alert-danger" style="display:block">Bạn không có quyền truy cập trang này.</div>';
         }

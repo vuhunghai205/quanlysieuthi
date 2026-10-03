@@ -51,6 +51,7 @@
                 <a href="san-pham.html" class="nav-item">Sản phẩm</a>
                 <a href="don-hang.html" class="nav-item">Đơn hàng</a>
                 <a href="ton-kho.html" class="nav-item">Tồn kho</a>
+                <a href="nha-cung-cap.html" class="nav-item" id="menu-ncc" style="display:none">Nhà cung cấp</a>
                 <a href="khach-hang.html" class="nav-item">Khách hàng</a>
                 <a href="bao-cao.html" class="nav-item">Báo cáo</a>
                 <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
@@ -113,6 +114,7 @@
             if (user.role === 'ADMIN') {
                 document.getElementById('menu-chi-nhanh').style.display = 'block';
                 document.getElementById('menu-nguoi-dung').style.display = 'block';
+            if(document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
             }
         }
 

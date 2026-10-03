@@ -3,11 +3,13 @@ package com.hunghaimart.service;
 import com.hunghaimart.dto.SanPhamRequest;
 import com.hunghaimart.entity.ChiNhanh;
 import com.hunghaimart.entity.DanhMuc;
+import com.hunghaimart.entity.NhaCungCap;
 import com.hunghaimart.entity.SanPham;
 import com.hunghaimart.exception.BusinessException;
 import com.hunghaimart.exception.ResourceNotFoundException;
 import com.hunghaimart.repository.ChiNhanhRepository;
 import com.hunghaimart.repository.DanhMucRepository;
+import com.hunghaimart.repository.NhaCungCapRepository;
 import com.hunghaimart.repository.SanPhamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class SanPhamService {
     private final SanPhamRepository sanPhamRepository;
     private final DanhMucRepository danhMucRepository;
     private final ChiNhanhRepository chiNhanhRepository;
+    private final NhaCungCapRepository nhaCungCapRepository;
 
     public List<SanPham> getAll() {
         return sanPhamRepository.findAll();
@@ -46,6 +49,12 @@ public class SanPhamService {
                 .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh không tồn tại"));
         }
 
+        NhaCungCap nhaCungCap = null;
+        if (request.getNhaCungCapId() != null) {
+            nhaCungCap = nhaCungCapRepository.findById(request.getNhaCungCapId())
+                .orElse(null);
+        }
+
         if (request.getGiaBan().compareTo(request.getGiaVon()) < 0) {
             throw new BusinessException("Giá bán không được nhỏ hơn giá vốn");
         }
@@ -56,9 +65,10 @@ public class SanPhamService {
                 .moTa(request.getMoTa())
                 .danhMuc(danhMuc)
                 .chiNhanh(chiNhanh)
+                .nhaCungCap(nhaCungCap)
                 .giaBan(request.getGiaBan())
                 .giaVon(request.getGiaVon())
-                .soLuongTon(0) // Khởi tạo tồn kho bằng 0
+                .soLuongTon(0)
                 .mucTonToiThieu(request.getMucTonToiThieu() != null ? request.getMucTonToiThieu() : 0)
                 .donVi(request.getDonVi())
                 .anhUrl(request.getAnhUrl())
@@ -86,10 +96,17 @@ public class SanPhamService {
                 .orElseThrow(() -> new ResourceNotFoundException("Danh mục không tồn tại"));
         }
 
+        NhaCungCap nhaCungCap = null;
+        if (request.getNhaCungCapId() != null) {
+            nhaCungCap = nhaCungCapRepository.findById(request.getNhaCungCapId())
+                .orElse(null);
+        }
+
         sanPham.setTenSanPham(request.getTenSanPham());
         sanPham.setMaSanPham(request.getMaSanPham());
         sanPham.setMoTa(request.getMoTa());
         sanPham.setDanhMuc(danhMuc);
+        sanPham.setNhaCungCap(nhaCungCap);
         sanPham.setGiaBan(request.getGiaBan());
         sanPham.setGiaVon(request.getGiaVon());
         sanPham.setMucTonToiThieu(request.getMucTonToiThieu() != null ? request.getMucTonToiThieu() : 0);

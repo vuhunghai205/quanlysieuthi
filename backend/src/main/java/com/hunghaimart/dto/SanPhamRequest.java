@@ -15,6 +15,7 @@ public class SanPhamRequest {
 
     private String moTa;
     private Long danhMucId;
+    private Long nhaCungCapId;
     private Long chiNhanhId;
 
     @NotNull(message = "Giá bán không được để trống")

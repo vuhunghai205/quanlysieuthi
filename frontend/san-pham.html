@@ -24,6 +24,7 @@
                 <a href="san-pham.html" class="nav-item active">Sản phẩm</a>
                 <a href="don-hang.html" class="nav-item">Đơn hàng</a>
                 <a href="ton-kho.html" class="nav-item">Tồn kho</a>
+                <a href="nha-cung-cap.html" class="nav-item" id="menu-ncc" style="display:none">Nhà cung cấp</a>
                 <a href="khach-hang.html" class="nav-item">Khách hàng</a>
                 <a href="chi-nhanh.html" class="nav-item" id="menu-chi-nhanh" style="display:none">Chi nhánh</a>
                 <a href="nguoi-dung.html" class="nav-item" id="menu-nguoi-dung" style="display:none">Người dùng</a>
@@ -73,8 +74,16 @@
             <form id="productForm">
                 <input type="hidden" id="sp_id">
                 <div class="form-group">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <select id="sp_ncc" class="form-control" required></select>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Mã SP</label>
                     <input type="text" id="sp_ma" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <select id="sp_ncc" class="form-control" required></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Tên sản phẩm</label>
@@ -89,6 +98,10 @@
                         <label class="form-label">Giá vốn</label>
                         <input type="number" id="sp_gia_von" class="form-control" required>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <select id="sp_ncc" class="form-control" required></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Đơn vị tính</label>
@@ -109,6 +122,7 @@
         if (user && user.role === 'ADMIN') {
             document.getElementById('menu-chi-nhanh').style.display = 'block';
             document.getElementById('menu-nguoi-dung').style.display = 'block';
+            if(document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
         }
         if (user && (user.role === 'ADMIN' || user.role === 'MANAGER')) {
             document.getElementById('btnAddProduct').style.display = 'block';
@@ -160,6 +174,7 @@
             document.getElementById('sp_id').value = '';
             document.getElementById('modalTitle').textContent = 'Thêm sản phẩm';
             document.getElementById('modalError').style.display = 'none';
+            try { const nccRes = await goiApi("/nha-cung-cap"); document.getElementById("sp_ncc").innerHTML = nccRes.data.map(n => `<option value="${n.id}">${n.tenNhaCungCap}</option>`).join(""); } catch(e){}
             document.getElementById('productModal').style.display = 'flex';
         }
 
@@ -176,6 +191,8 @@
             document.getElementById('sp_gia_ban').value = sp.giaBan;
             document.getElementById('sp_gia_von').value = sp.giaVon;
             document.getElementById('sp_don_vi').value = sp.donVi;
+            document.getElementById('sp_ncc').value = sp.nhaCungCap ? sp.nhaCungCap.id : '';
+            try { const nccRes = await goiApi("/nha-cung-cap"); document.getElementById("sp_ncc").innerHTML = nccRes.data.map(n => `<option value="${n.id}">${n.tenNhaCungCap}</option>`).join(""); } catch(e){}
             document.getElementById('productModal').style.display = 'flex';
         }
 
@@ -188,6 +205,7 @@
                 giaBan: parseFloat(document.getElementById('sp_gia_ban').value),
                 giaVon: parseFloat(document.getElementById('sp_gia_von').value),
                 donVi: document.getElementById('sp_don_vi').value,
+                nhaCungCapId: parseInt(document.getElementById('sp_ncc').value),
                 hoatDong: true
             };
 
