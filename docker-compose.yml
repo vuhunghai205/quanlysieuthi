@@ -51,6 +51,17 @@ services:
     networks:
       - hung-hai-network
 
+  adminer:
+    image: adminer
+    container_name: hung-hai-mart-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+    networks:
+      - hung-hai-network
+
 volumes:
   mysql_data:
 
