@@ -105,7 +105,8 @@
                     <h4 style="margin-bottom: 1rem;">Giỏ hàng</h4>
                     
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <select id="sp_select" class="form-control"></select>
+                        <input list="sp_list" id="sp_search" class="form-control" placeholder="🔍 Tìm kiếm sản phẩm..." style="flex: 1;">
+                        <datalist id="sp_list"></datalist>
                         <input type="number" id="sp_qty" class="form-control" style="width: 80px;" value="1" min="1">
                         <button class="btn btn-primary" onclick="addToCart()">Thêm</button>
                     </div>
@@ -222,8 +223,8 @@
                 const cnSelect = document.getElementById('dh_chi_nhanh');
                 cnSelect.innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join('');
                 
-                const spSelect = document.getElementById('sp_select');
-                spSelect.innerHTML = products.map(s => `<option value="${s.id}">${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ</option>`).join('');
+                const spList = document.getElementById('sp_list');
+                spList.innerHTML = products.map(s => `<option data-id="${s.id}" value="${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ"></option>`).join('');
             } catch (err) {
                 document.getElementById('modalError').textContent = "Không tải được dữ liệu: " + err.message;
                 document.getElementById('modalError').style.display = 'block';
@@ -250,9 +251,18 @@
         }
 
         function addToCart() {
-            const spId = parseInt(document.getElementById('sp_select').value);
+            const searchInput = document.getElementById('sp_search').value;
+            const option = Array.from(document.getElementById('sp_list').options).find(opt => opt.value === searchInput);
+            if (!option) {
+                alert('Vui lòng chọn sản phẩm hợp lệ từ danh sách gợi ý!');
+                return;
+            }
+            const spId = parseInt(option.getAttribute('data-id'));
             const qty = parseInt(document.getElementById('sp_qty').value);
             if (!spId || qty < 1) return;
+            
+            // Xóa nội dung tìm kiếm sau khi thêm thành công
+            document.getElementById('sp_search').value = '';
             
             const prod = products.find(p => p.id === spId);
             const exist = cart.find(item => item.spId === spId);
