@@ -1,0 +1,23 @@
+{
+  "project_name": "quanlysieuthi",
+  "version": "1.0.0",
+  "description": "Configuration for Graphify Repo Mapping to optimize LLM Context",
+  "include": [
+    "backend/src/**/*.java",
+    "backend/src/**/*.xml",
+    "frontend/**/*.html",
+    "frontend/**/*.js",
+    "frontend/**/*.css"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/target/**",
+    "**/.git/**",
+    "**/logs/**",
+    "**/.agents/**",
+    "**/graphify-out/**"
+  ],
+  "max_depth": 5,
+  "generate_report": true,
+  "report_format": "markdown"
+}
