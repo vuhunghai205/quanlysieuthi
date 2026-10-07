@@ -42,7 +42,10 @@
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 class="card-title" style="margin: 0;">Danh sách sản phẩm</h3>
-                        <button class="btn btn-primary" id="btnAddProduct" style="display:none;" onclick="showModal()">+ Thêm sản phẩm</button>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm sản phẩm..." style="width: 250px;" onkeyup="filterTable()">
+                            <button class="btn btn-primary" id="btnAddProduct" style="display:none;" onclick="showModal()">+ Thêm sản phẩm</button>
+                        </div>
                     </div>
                     
                     <div id="errorAlert" class="alert alert-danger"></div>
@@ -233,6 +236,32 @@
         }
         
         document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+    
+    <script>
+        function filterTable() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toLowerCase();
+            const tbody = document.getElementById("tableBody");
+            const trs = tbody.getElementsByTagName("tr");
+            
+            for (let i = 0; i < trs.length; i++) {
+                if (trs[i].getElementsByTagName("td").length === 1) continue;
+                
+                const tds = trs[i].getElementsByTagName("td");
+                let match = false;
+                for (let j = 0; j < tds.length; j++) {
+                    if (tds[j]) {
+                        const txtValue = tds[j].textContent || tds[j].innerText;
+                        if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+                trs[i].style.display = match ? "" : "none";
+            }
+        }
     </script>
     <!-- Modal Đổi Mật Khẩu -->
     <div class="modal" id="changePasswordModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
