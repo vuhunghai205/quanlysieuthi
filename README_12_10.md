@@ -124,3 +124,45 @@ Hệ thống được đóng gói thành 3 máy ảo thu nhỏ (Container) chạ
 2. `hung-hai-mart-backend`: Chạy lõi **Java Spring Boot** ở cổng 8080. Đóng vai trò là cầu nối cung cấp API và thao tác với DB.
 3. `hung-hai-mart-frontend`: Chạy máy chủ **Nginx** ở cổng 3000, chứa các file giao diện HTML/CSS/JS. Nó đóng vai trò hiển thị giao diện và đẩy yêu cầu (Request) xuống cho Backend.
 *(Ngoài ra còn tích hợp sẵn công cụ **Adminer** ở cổng 8081 để quản trị Database trực tiếp bằng giao diện web).*
+
+
+## 7. Quy trình CI/CD (Tích hợp & Triển khai liên tục) trong dự án này
+Dự án đã được cấu hình sẵn luồng CI/CD chuyên nghiệp bằng **GitHub Actions** (nằm trong thư mục `.github/workflows/`):
+- **CI (Continuous Integration - `ci.yml`):** Dùng để "Gác cổng". Mỗi khi có ai đẩy code lên nhánh `main`, GitHub sẽ tự động tạo một máy ảo, bật MySQL, chạy toàn bộ **Unit Test** của Backend (qua Maven) và tự động Build thử Docker Image. Nếu code bị lỗi hoặc test không pass, nó báo đỏ ngay lập tức và ngăn không cho gộp code.
+- **CD (Continuous Deployment - `cd.yml`):** Dùng để "Triển khai tự động". Nếu CI thành công, CD sẽ tự động đẩy Docker Image lên mạng (GitHub Container Registry). Sau đó tự động SSH vào máy chủ thật (Server VPS), tải Image mới về và khởi động lại Server hoàn toàn tự động. Chức năng này giúp tiết kiệm thời gian triển khai, leader không cần copy code lên server bằng tay.
+
+## 8. Kỹ năng làm việc với AI Agents và Quản lý Mã nguồn (Tiêu chí Đánh giá)
+
+Trong quá trình phát triển đồ án này, bên cạnh việc nắm vững kiến thức lập trình nền tảng, một kỹ năng vô cùng quan trọng là làm chủ các công cụ hỗ trợ (AI Agents) và quy trình làm việc nhóm chuyên nghiệp (Git, CI/CD). Dưới đây là phần trình bày chi tiết về các kỹ năng này:
+
+### Ý 1: Quy trình xây dựng hệ thống với sự trợ giúp của AI Agents (Copilot, Cursor, Claude)
+Để làm việc hiệu quả với các AI Agent mà không bị "phụ thuộc", quy trình thực tế được áp dụng trong dự án này bao gồm:
+1. **Chia để trị (Divide & Conquer):** Không yêu cầu AI "viết cho tôi cả một hệ thống". Thay vào đó, chia nhỏ bài toán. Ví dụ: Yêu cầu AI viết khung Controller trước, sau đó mới đi sâu vào Service, rồi mới tới Frontend.
+2. **Cung cấp ngữ cảnh (Contexting):** AI bị giới hạn bởi bộ nhớ (Token). Mình sử dụng các công cụ như `graphify` để trích xuất cấu trúc thư mục (Repository Map) thành file `GRAPH_REPORT.md` rồi đưa cho AI đọc. Điều này giúp AI hiểu kiến trúc tổng thể, không sinh code chệch hướng hay phá hỏng các file không liên quan.
+3. **Kiểm soát tính đồng nhất công nghệ:** Khi yêu cầu AI thêm tính năng (như "Thêm thanh tìm kiếm vào 4 trang"), mình phải làm chủ yêu cầu: "Chỉ dùng Vanilla JS (JS thuần) và ẩn/hiện trực tiếp thẻ `<tr>`". Nếu không hiểu công nghệ, AI có thể tự động nhúng thư viện lạ (như jQuery, React) làm nát dự án.
+4. **Kiểm chứng (Review & Verify):** Không copy/paste mù quáng. Đọc hiểu dòng code AI sinh ra, kiểm tra các luồng dữ liệu (Data flow) xem có đúng với thiết kế DTO và Entity của mình hay không.
+
+### Ý 2: Kỹ năng kiểm soát code và Đánh giá hiệu suất
+**a) Kiểm soát vị trí và cách sửa tính năng:**
+- Với kiến trúc N-Tier, mọi tính năng đều có chỗ ở rõ ràng. 
+- *Ví dụ về tính năng Đăng nhập / Đổi mật khẩu:*
+  - Frontend: Code giao diện và regex nằm ở các file HTML (vd: `<input pattern="^[A-Z](?=.*[0-9])(?=.*[@$!%*?&.])[A-Za-z0-9@$!%*?&.]{7,}$">`).
+  - Tầng DTO (Backend): Nằm ở `ChangePasswordDTO`, kiểm tra bằng Annotation `@Pattern` để chặn dữ liệu sai cấu trúc ngay từ ngoài.
+  - Tầng Service (Backend): Nằm ở `AuthService`, nơi thực hiện thuật toán so sánh mật khẩu cũ, mã hóa mật khẩu mới (BCrypt).
+  - Tầng Controller (Backend): Nằm ở `AuthController`, điều hướng Request và ném lỗi (Exception) ra nếu sai mật khẩu.
+
+**b) Kỹ năng sử dụng Skill / Tool hỗ trợ (như graphify):**
+- Sử dụng các script đọc cấu trúc dự án (graphify) là một kỹ năng cực kỳ cần thiết để làm việc với AI hiện đại. Thay vì copy từng file cho AI đọc, script này sinh ra một file Markdown sơ đồ cây (`GRAPH_REPORT.md`). Việc này giúp AI Agent nắm bắt chính xác dự án đang có file gì, module nào liên kết với nhau ra sao. Nó giống như việc bạn đưa cho kiến trúc sư một bản vẽ tổng quan thay vì từng viên gạch.
+
+**c) Kỹ năng quản lý nhóm với Git (Log, Diff) trong vai trò Leader:**
+- **`git log`**: Giúp Leader xem lại toàn bộ lịch sử phát triển, ai là người commit, vào thời gian nào, với thông điệp gì. Một commit tốt phải rõ ràng (vd: `feat: Thêm chức năng tìm kiếm`).
+- **`git diff`**: Giúp Leader xem chi tiết từng dòng code thêm/xóa trước khi duyệt gộp code (Merge/Pull Request). Qua đó phát hiện được việc code rác, code thừa.
+- **Đánh giá hiệu quả công việc:** Dựa vào `git diff` và `log`, Leader không đánh giá qua "số lượng dòng code" (ai code nhiều chưa chắc đã tốt), mà đánh giá qua:
+  1. Tính nguyên tử của commit: Mỗi commit giải quyết triệt để 1 tính năng/bug nhỏ.
+  2. Chất lượng code (Clean Code): Code dễ đọc, ít thừa thãi, tái sử dụng tốt.
+  3. Mức độ hoàn thành các chức năng được giao và tỷ lệ phát sinh lỗi sau khi test.
+
+### Ý 3: Kết hợp công cụ Test và CI/CD (Continuous Integration / Continuous Deployment)
+**1. Tác dụng của công cụ Test:**
+- **Postman / Swagger:** Dùng để test thủ công (Manual Test) trực tiếp các endpoint API của Backend mà không cần đợi Frontend làm xong. Kiểm tra các mã trạng thái (200 OK, 400 Bad Request) xem đúng kịch bản không.
+- **Unit Test (JUnit / Mockito):** Viết code để tự động test code. Giúp đảm bảo một hàm (vd: Tính tiền giảm giá) luôn chạy đúng trong mọi trường hợp.
