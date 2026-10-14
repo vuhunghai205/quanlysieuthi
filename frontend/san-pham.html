@@ -33,21 +33,30 @@
             
             <div class="content-body">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 class="card-title" style="margin: 0;">Danh sách sản phẩm</h3>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm sản phẩm..." style="width: 250px;" onkeyup="filterTable()">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <h3 class="card-title" style="margin: 0;">Danh sách sản phẩm</h3>
+                            <span id="branchBadge" style="font-size: 0.8rem; font-weight: 500; color: var(--primary); background: var(--primary-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); border: 1px solid var(--mint);"></span>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <select id="branchFilter" class="form-control" style="width: 230px; display:none;" onchange="loadData()">
+                                <option value="">Tất cả chi nhánh (Toàn hệ thống)</option>
+                                <option value="1">Hùng Hải Mart Hà Nội</option>
+                                <option value="2">Hùng Hải Mart Hồ Chí Minh</option>
+                            </select>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm sản phẩm..." style="width: 200px;" onkeyup="filterTable()">
                             <button class="btn btn-primary" id="btnAddProduct" style="display:none;" onclick="showModal()">+ Thêm sản phẩm</button>
                         </div>
                     </div>
                     
-                    <div id="errorAlert" class="alert alert-danger"></div>
+                    <div id="errorAlert" class="alert alert-danger" style="display:none;"></div>
                     
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Mã SP</th>
                                 <th>Tên sản phẩm</th>
+                                <th id="thBranch" style="display:none;">Chi nhánh</th>
                                 <th>Nhà cung cấp</th>
                                 <th>Giá bán</th>
                                 <th>Tồn kho</th>
@@ -84,6 +93,10 @@
                     <label class="form-label">Nhà cung cấp</label>
                     <select id="sp_ncc" class="form-control" required></select>
                 </div>
+                <div class="form-group" id="group_chinhanh" style="display:none;">
+                    <label class="form-label">Chi nhánh</label>
+                    <select id="sp_chinhanh" class="form-control"></select>
+                </div>
                 <div class="form-group" style="display: flex; gap: 1rem;">
                     <div style="flex: 1;">
                         <label class="form-label">Giá bán</label>
@@ -114,23 +127,34 @@
             if (user.role === 'ADMIN') {
                 if (document.getElementById('menu-chi-nhanh')) document.getElementById('menu-chi-nhanh').style.display = 'block';
                 if (document.getElementById('menu-nguoi-dung')) document.getElementById('menu-nguoi-dung').style.display = 'block';
+                if (document.getElementById('branchFilter')) document.getElementById('branchFilter').style.display = 'block';
+                if (document.getElementById('thBranch')) document.getElementById('thBranch').style.display = 'table-cell';
+                if (document.getElementById('group_chinhanh')) document.getElementById('group_chinhanh').style.display = 'block';
+                document.getElementById('branchBadge').textContent = 'Toàn hệ thống (Tổng cả 2 chi nhánh)';
+            } else {
+                const branchName = user.branchName || (user.branch == 1 ? 'Chi nhánh Hà Nội' : (user.branch == 2 ? 'Chi nhánh Hồ Chí Minh' : 'Chi nhánh riêng'));
+                document.getElementById('branchBadge').textContent = branchName;
             }
             if (user.role === 'ADMIN' || user.role === 'MANAGER') {
                 if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
+                document.getElementById('btnAddProduct').style.display = 'block';
             }
-        }
-        if (user && (user.role === 'ADMIN' || user.role === 'MANAGER')) {
-            document.getElementById('btnAddProduct').style.display = 'block';
         }
 
         async function loadData() {
             try {
-                const res = await goiApi('/san-pham');
+                let url = '/san-pham';
+                const branchFilter = document.getElementById('branchFilter');
+                if (user && user.role === 'ADMIN' && branchFilter && branchFilter.value) {
+                    url += `?chiNhanhId=${branchFilter.value}`;
+                }
+                const res = await goiApi(url);
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
                 
                 if (!res.data || res.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">Chưa có sản phẩm nào.</td></tr>';
+                    const colSpan = (user && user.role === 'ADMIN') ? 8 : 7;
+                    tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center">Chưa có sản phẩm nào.</td></tr>`;
                     return;
                 }
 
@@ -138,6 +162,7 @@
                     const status = sp.hoatDong ? '<span style="color:var(--primary)">Kinh doanh</span>' : '<span style="color:var(--danger)">Ngừng</span>';
                     const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sp.giaBan);
                     const ncc = sp.nhaCungCap ? sp.nhaCungCap.tenNhaCungCap : '-';
+                    const branchName = sp.chiNhanh ? sp.chiNhanh.tenChiNhanh : (sp.chiNhanhId == 1 ? 'Hà Nội' : (sp.chiNhanhId == 2 ? 'Hồ Chí Minh' : '-'));
                     
                     let actions = '';
                     if (user.role === 'ADMIN' || user.role === 'MANAGER') {
@@ -147,13 +172,18 @@
                         actions += ` <button class="btn" style="border: 1px solid var(--danger); color: var(--danger); padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deleteProduct(${sp.id})">Xóa</button>`;
                     }
                     
+                    const branchTd = (user && user.role === 'ADMIN') 
+                        ? `<td><span class="badge" style="background:var(--card-hover); border:1px solid var(--border); padding:0.25rem 0.55rem; font-size:0.75rem; border-radius:var(--radius-full);">${branchName}</span></td>` 
+                        : '';
+
                     tbody.innerHTML += `
                         <tr>
-                            <td>${sp.maSanPham}</td>
+                            <td style="font-weight:600; color:var(--primary);">${sp.maSanPham}</td>
                             <td>${sp.tenSanPham}</td>
+                            ${branchTd}
                             <td><small>${ncc}</small></td>
-                            <td>${price}</td>
-                            <td>${sp.soLuongTon} ${sp.donVi || ''}</td>
+                            <td style="font-weight:500;">${price}</td>
+                            <td><strong>${sp.soLuongTon}</strong> ${sp.donVi || ''}</td>
                             <td>${status}</td>
                             <td>${actions || '-'}</td>
                         </tr>
@@ -171,7 +201,16 @@
             document.getElementById('sp_id').value = '';
             document.getElementById('modalTitle').textContent = 'Thêm sản phẩm';
             document.getElementById('modalError').style.display = 'none';
-            try { const nccRes = await goiApi("/nha-cung-cap"); document.getElementById("sp_ncc").innerHTML = nccRes.data.map(n => `<option value="${n.id}">${n.tenNhaCungCap}</option>`).join(""); } catch(e){}
+            try { 
+                const [nccRes, cnRes] = await Promise.all([
+                    goiApi("/nha-cung-cap"),
+                    (user && user.role === 'ADMIN') ? goiApi("/chi-nhanh") : Promise.resolve({ data: [] })
+                ]);
+                document.getElementById("sp_ncc").innerHTML = nccRes.data.map(n => `<option value="${n.id}">${n.tenNhaCungCap}</option>`).join("");
+                if (user && user.role === 'ADMIN' && cnRes.data.length > 0) {
+                    document.getElementById("sp_chinhanh").innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join("");
+                }
+            } catch(e){}
             document.getElementById('productModal').style.display = 'flex';
         }
 
@@ -188,7 +227,17 @@
             document.getElementById('sp_gia_ban').value = sp.giaBan;
             document.getElementById('sp_gia_von').value = sp.giaVon;
             document.getElementById('sp_don_vi').value = sp.donVi;
-            try { const nccRes = await goiApi("/nha-cung-cap"); document.getElementById("sp_ncc").innerHTML = nccRes.data.map(n => `<option value="${n.id}">${n.tenNhaCungCap}</option>`).join(""); } catch(e){}
+            try { 
+                const [nccRes, cnRes] = await Promise.all([
+                    goiApi("/nha-cung-cap"),
+                    (user && user.role === 'ADMIN') ? goiApi("/chi-nhanh") : Promise.resolve({ data: [] })
+                ]);
+                document.getElementById("sp_ncc").innerHTML = nccRes.data.map(n => `<option value="${n.id}">${n.tenNhaCungCap}</option>`).join(""); 
+                if (user && user.role === 'ADMIN' && cnRes.data.length > 0) {
+                    document.getElementById("sp_chinhanh").innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join("");
+                    if (sp.chiNhanh) document.getElementById("sp_chinhanh").value = sp.chiNhanh.id;
+                }
+            } catch(e){}
             document.getElementById('sp_ncc').value = sp.nhaCungCap ? sp.nhaCungCap.id : '';
             document.getElementById('productModal').style.display = 'flex';
         }
@@ -205,6 +254,9 @@
                 donVi: document.getElementById('sp_don_vi').value,
                 hoatDong: true
             };
+            if (user && user.role === 'ADMIN' && document.getElementById('sp_chinhanh').value) {
+                data.chiNhanhId = parseInt(document.getElementById('sp_chinhanh').value);
+            }
 
             try {
                 if (id) {

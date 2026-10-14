@@ -33,24 +33,33 @@
             
             <div class="content-body">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 class="card-title" style="margin: 0;">Báo cáo tồn kho hiện tại</h3>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tồn kho..." style="width: 250px;" onkeyup="filterTable()">
-                            <div id="btnInventoryActions" style="display:none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <h3 class="card-title" style="margin: 0;">Báo cáo tồn kho hiện tại</h3>
+                            <span id="branchBadge" style="font-size: 0.8rem; font-weight: 500; color: var(--primary); background: var(--primary-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); border: 1px solid var(--mint);"></span>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <select id="branchFilter" class="form-control" style="width: 230px; display:none;" onchange="loadData()">
+                                <option value="">Tất cả chi nhánh (Toàn hệ thống)</option>
+                                <option value="1">Hùng Hải Mart Hà Nội</option>
+                                <option value="2">Hùng Hải Mart Hồ Chí Minh</option>
+                            </select>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tồn kho..." style="width: 200px;" onkeyup="filterTable()">
+                            <div id="btnInventoryActions" style="display:none; display:flex; gap:8px;">
                                 <button class="btn btn-primary" onclick="showModal('NHAP')">+ Nhập kho từ NCC</button>
                                 <button class="btn" style="border: 1px solid var(--warning); color: var(--warning);" onclick="showModal('XUAT')">Xuất/Điều chỉnh</button>
                             </div>
                         </div>
                     </div>
                     
-                    <div id="errorAlert" class="alert alert-danger"></div>
+                    <div id="errorAlert" class="alert alert-danger" style="display:none;"></div>
                     
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Mã SP</th>
                                 <th>Tên sản phẩm</th>
+                                <th id="thBranch" style="display:none;">Chi nhánh</th>
                                 <th>Nhà cung cấp</th>
                                 <th>Tồn hiện tại</th>
                                 <th>Đơn vị</th>
@@ -73,7 +82,11 @@
             <div id="modalError" class="alert alert-danger"></div>
             <form id="tonKhoForm">
                 <input type="hidden" id="loai_gd">
-                <input type="hidden" id="tk_chi_nhanh" value="1"> <!-- Ẩn chi nhánh đi, gán cứng = 1 -->
+                <div class="form-group" id="group_tk_chinhanh" style="display:none;">
+                    <label class="form-label">Chi nhánh</label>
+                    <select id="tk_chi_nhanh_select" class="form-control" onchange="filterProducts()"></select>
+                </div>
+                <input type="hidden" id="tk_chi_nhanh" value="1">
                 
                 <div class="form-group" id="group_ncc">
                     <label class="form-label">Nhà cung cấp</label>
@@ -111,27 +124,39 @@
             if (user.role === 'ADMIN') {
                 if (document.getElementById('menu-chi-nhanh')) document.getElementById('menu-chi-nhanh').style.display = 'block';
                 if (document.getElementById('menu-nguoi-dung')) document.getElementById('menu-nguoi-dung').style.display = 'block';
+                if (document.getElementById('branchFilter')) document.getElementById('branchFilter').style.display = 'block';
+                if (document.getElementById('thBranch')) document.getElementById('thBranch').style.display = 'table-cell';
+                if (document.getElementById('group_tk_chinhanh')) document.getElementById('group_tk_chinhanh').style.display = 'block';
+                document.getElementById('branchBadge').textContent = 'Toàn hệ thống (Tổng cả 2 chi nhánh)';
+            } else {
+                const branchName = user.branchName || (user.branch == 1 ? 'Chi nhánh Hà Nội' : (user.branch == 2 ? 'Chi nhánh Hồ Chí Minh' : 'Chi nhánh riêng'));
+                document.getElementById('branchBadge').textContent = branchName;
+                if (user.branch) document.getElementById('tk_chi_nhanh').value = user.branch;
             }
             if (user.role === 'ADMIN' || user.role === 'MANAGER') {
                 if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
+                const btnActions = document.getElementById('btnInventoryActions');
+                if (btnActions) btnActions.style.display = 'flex';
             }
-        }
-        if (user && (user.role === 'ADMIN' || user.role === 'MANAGER')) {
-            const btnActions = document.getElementById('btnInventoryActions');
-            if (btnActions) btnActions.style.display = 'block';
         }
 
         let allProducts = [];
 
         async function loadData() {
             try {
-                const res = await goiApi('/san-pham');
+                let url = '/san-pham';
+                const branchFilter = document.getElementById('branchFilter');
+                if (user && user.role === 'ADMIN' && branchFilter && branchFilter.value) {
+                    url += `?chiNhanhId=${branchFilter.value}`;
+                }
+                const res = await goiApi(url);
                 allProducts = res.data;
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
                 
                 if (!allProducts || allProducts.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Chưa có dữ liệu tồn kho.</td></tr>';
+                    const colSpan = (user && user.role === 'ADMIN') ? 7 : 6;
+                    tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center">Chưa có dữ liệu tồn kho.</td></tr>`;
                     return;
                 }
 
@@ -140,13 +165,18 @@
                         ? '<span style="color:var(--danger)">Sắp hết hàng</span>' 
                         : '<span style="color:var(--success)">Bình thường</span>';
                     const ncc = sp.nhaCungCap ? sp.nhaCungCap.tenNhaCungCap : '-';
+                    const branchName = sp.chiNhanh ? sp.chiNhanh.tenChiNhanh : (sp.chiNhanhId == 1 ? 'Hà Nội' : (sp.chiNhanhId == 2 ? 'Hồ Chí Minh' : '-'));
+                    const branchTd = (user && user.role === 'ADMIN') 
+                        ? `<td><span class="badge" style="background:var(--card-hover); border:1px solid var(--border); padding:0.25rem 0.55rem; font-size:0.75rem; border-radius:var(--radius-full);">${branchName}</span></td>` 
+                        : '';
                     
                     tbody.innerHTML += `
                         <tr>
-                            <td>${sp.maSanPham}</td>
+                            <td style="font-weight:600; color:var(--primary);">${sp.maSanPham}</td>
                             <td>${sp.tenSanPham}</td>
+                            ${branchTd}
                             <td><small>${ncc}</small></td>
-                            <td style="font-weight:bold; color:var(--primary)">${sp.soLuongTon}</td>
+                            <td style="font-weight:bold; color:var(--text-main); font-size:1.05rem;">${sp.soLuongTon}</td>
                             <td>${sp.donVi || ''}</td>
                             <td>${cb}</td>
                         </tr>
@@ -173,12 +203,19 @@
             }
 
             try {
-                const nccRes = await goiApi('/nha-cung-cap');
+                const [nccRes, cnRes] = await Promise.all([
+                    goiApi('/nha-cung-cap'),
+                    (user && user.role === 'ADMIN') ? goiApi('/chi-nhanh') : Promise.resolve({ data: [] })
+                ]);
                 
                 const nccSelect = document.getElementById('tk_ncc');
                 nccSelect.innerHTML = '<option value="">-- Chọn Nhà cung cấp --</option>' + nccRes.data.map(c => `<option value="${c.id}">${c.tenNhaCungCap}</option>`).join('');
                 
-                // Mặc định hiện tất cả sản phẩm
+                if (user && user.role === 'ADMIN' && cnRes.data.length > 0) {
+                    const cnSelect = document.getElementById('tk_chi_nhanh_select');
+                    cnSelect.innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join('');
+                }
+
                 filterProducts();
             } catch (err) {
                 document.getElementById('modalError').textContent = "Không tải được dữ liệu: " + err.message;
@@ -189,10 +226,14 @@
         function filterProducts() {
             const loai = document.getElementById('loai_gd').value;
             const nccId = document.getElementById('tk_ncc').value;
+            const selectedBranch = (user && user.role === 'ADMIN') ? document.getElementById('tk_chi_nhanh_select').value : null;
             
             let filtered = allProducts;
+            if (selectedBranch) {
+                filtered = filtered.filter(p => p.chiNhanh && p.chiNhanh.id == selectedBranch);
+            }
             if (loai === 'NHAP' && nccId) {
-                filtered = allProducts.filter(p => p.nhaCungCap && p.nhaCungCap.id == nccId);
+                filtered = filtered.filter(p => p.nhaCungCap && p.nhaCungCap.id == nccId);
             }
 
             const spSelect = document.getElementById('tk_san_pham');
@@ -212,9 +253,13 @@
             btn.disabled = true;
             btn.textContent = "Đang xử lý...";
             
+            let branchId = (user && user.role === 'ADMIN' && document.getElementById('tk_chi_nhanh_select').value)
+                ? parseInt(document.getElementById('tk_chi_nhanh_select').value)
+                : parseInt(document.getElementById('tk_chi_nhanh').value);
+
             const data = {
                 sanPhamId: parseInt(document.getElementById('tk_san_pham').value),
-                chiNhanhId: parseInt(document.getElementById('tk_chi_nhanh').value), // Bị ẩn nên mặc định = 1
+                chiNhanhId: branchId,
                 soLuong: parseInt(document.getElementById('tk_so_luong').value),
                 loaiGiaoDich: document.getElementById('loai_gd').value,
                 ghiChu: document.getElementById('tk_ghi_chu').value

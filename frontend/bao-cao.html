@@ -68,6 +68,10 @@
             </header>
             
             <div class="content-body">
+                <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                    <span>Báo cáo Tài chính & Hoạt động</span>
+                    <span id="branchBadge" style="font-size: 0.875rem; font-weight: 500; color: var(--primary); background: var(--primary-light); padding: 0.35rem 0.85rem; border-radius: var(--radius-full); border: 1px solid var(--mint);"></span>
+                </h2>
                 <div id="errorAlert" class="alert alert-danger" style="display:none;"></div>
                 
                 <div class="dashboard-grid">
@@ -119,6 +123,10 @@
             if (user.role === 'ADMIN') {
                 if (document.getElementById('menu-chi-nhanh')) document.getElementById('menu-chi-nhanh').style.display = 'block';
                 if (document.getElementById('menu-nguoi-dung')) document.getElementById('menu-nguoi-dung').style.display = 'block';
+                document.getElementById('branchBadge').textContent = 'Hệ thống: Toàn quốc (Tổng cả 2 chi nhánh)';
+            } else {
+                const branchName = user.branchName || (user.branch == 1 ? 'Chi nhánh Hà Nội' : (user.branch == 2 ? 'Chi nhánh Hồ Chí Minh' : 'Chi nhánh riêng'));
+                document.getElementById('branchBadge').textContent = 'Chi nhánh: ' + branchName;
             }
             if (user.role === 'ADMIN' || user.role === 'MANAGER') {
                 if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';

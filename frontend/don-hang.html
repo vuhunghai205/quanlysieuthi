@@ -233,8 +233,17 @@
                     }
                 }
                 
-                const spList = document.getElementById('sp_list');
-                spList.innerHTML = products.map(s => `<option data-id="${s.id}" value="${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ"></option>`).join('');
+                const filterSpByBranch = () => {
+                    const selCn = cnSelect.value;
+                    let availSp = products;
+                    if (user && user.role === 'ADMIN' && selCn) {
+                        availSp = products.filter(s => s.chiNhanh && s.chiNhanh.id == selCn);
+                    }
+                    const spList = document.getElementById('sp_list');
+                    spList.innerHTML = availSp.map(s => `<option data-id="${s.id}" value="${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ"></option>`).join('');
+                };
+                cnSelect.onchange = filterSpByBranch;
+                filterSpByBranch();
             } catch (err) {
                 document.getElementById('modalError').textContent = "Không tải được dữ liệu: " + err.message;
                 document.getElementById('modalError').style.display = 'block';

@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hunghaimart.entity.NguoiDung;
+import com.hunghaimart.security.CustomUserDetails;
 import java.util.List;
 
 @Service
@@ -30,13 +32,31 @@ public class SanPhamService {
         return sanPhamRepository.findAll();
     }
 
+    public List<SanPham> getAll(CustomUserDetails userDetails, Long chiNhanhId) {
+        if (userDetails != null && userDetails.getNguoiDung() != null) {
+            NguoiDung user = userDetails.getNguoiDung();
+            if ("ADMIN".equals(user.getVaiTro()) || user.getChiNhanh() == null) {
+                if (chiNhanhId != null) {
+                    return sanPhamRepository.findByChiNhanhId(chiNhanhId);
+                }
+                return sanPhamRepository.findAll();
+            } else {
+                return sanPhamRepository.findByChiNhanhId(user.getChiNhanh().getId());
+            }
+        }
+        if (chiNhanhId != null) {
+            return sanPhamRepository.findByChiNhanhId(chiNhanhId);
+        }
+        return sanPhamRepository.findAll();
+    }
+
     public SanPham getById(Long id) {
         return sanPhamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
     }
 
     @Transactional
-    public SanPham create(SanPhamRequest request) {
+    public SanPham create(SanPhamRequest request, CustomUserDetails userDetails) {
         DanhMuc danhMuc = null;
         if (request.getDanhMucId() != null) {
             danhMuc = danhMucRepository.findById(request.getDanhMucId())
@@ -44,7 +64,15 @@ public class SanPhamService {
         }
 
         ChiNhanh chiNhanh = null;
-        if (request.getChiNhanhId() != null) {
+        if (userDetails != null && userDetails.getNguoiDung() != null) {
+            NguoiDung user = userDetails.getNguoiDung();
+            if (!"ADMIN".equals(user.getVaiTro()) && user.getChiNhanh() != null) {
+                chiNhanh = user.getChiNhanh();
+            } else if (request.getChiNhanhId() != null) {
+                chiNhanh = chiNhanhRepository.findById(request.getChiNhanhId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh không tồn tại"));
+            }
+        } else if (request.getChiNhanhId() != null) {
             chiNhanh = chiNhanhRepository.findById(request.getChiNhanhId())
                 .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh không tồn tại"));
         }

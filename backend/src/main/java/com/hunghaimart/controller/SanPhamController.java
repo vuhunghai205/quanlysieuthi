@@ -3,11 +3,13 @@ package com.hunghaimart.controller;
 import com.hunghaimart.dto.ApiResponse;
 import com.hunghaimart.dto.SanPhamRequest;
 import com.hunghaimart.entity.SanPham;
+import com.hunghaimart.security.CustomUserDetails;
 import com.hunghaimart.service.SanPhamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +22,10 @@ public class SanPhamController {
     private final SanPhamService sanPhamService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<SanPham>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách sản phẩm thành công", sanPhamService.getAll()));
+    public ResponseEntity<ApiResponse<List<SanPham>>> getAll(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) Long chiNhanhId) {
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách sản phẩm thành công", sanPhamService.getAll(userDetails, chiNhanhId)));
     }
 
     @GetMapping("/{id}")
@@ -31,8 +35,10 @@ public class SanPhamController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<ApiResponse<SanPham>> create(@Valid @RequestBody SanPhamRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Tạo sản phẩm thành công", sanPhamService.create(request)));
+    public ResponseEntity<ApiResponse<SanPham>> create(
+            @Valid @RequestBody SanPhamRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(ApiResponse.success("Tạo sản phẩm thành công", sanPhamService.create(request, userDetails)));
     }
 
     @PutMapping("/{id}")
