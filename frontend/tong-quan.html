@@ -120,11 +120,13 @@
         checkAuth();
         const user = getUser();
         if (user) {
-            document.getElementById('userInfo').textContent = `${user.name} (${user.role})`;
+            document.getElementById('userInfo').textContent = `${user.fullName || user.email} (${user.role})`;
             if (user.role === 'ADMIN') {
-                document.getElementById('menu-chi-nhanh').style.display = 'block';
-                document.getElementById('menu-nguoi-dung').style.display = 'block';
-            if(document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
+                if (document.getElementById('menu-chi-nhanh')) document.getElementById('menu-chi-nhanh').style.display = 'block';
+                if (document.getElementById('menu-nguoi-dung')) document.getElementById('menu-nguoi-dung').style.display = 'block';
+            }
+            if (user.role === 'ADMIN' || user.role === 'MANAGER') {
+                if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
             }
         }
 

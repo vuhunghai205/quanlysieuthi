@@ -37,7 +37,7 @@
                         <h3 class="card-title" style="margin: 0;">Báo cáo tồn kho hiện tại</h3>
                         <div style="display: flex; gap: 10px;">
                             <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm tồn kho..." style="width: 250px;" onkeyup="filterTable()">
-                            <div>
+                            <div id="btnInventoryActions" style="display:none;">
                                 <button class="btn btn-primary" onclick="showModal('NHAP')">+ Nhập kho từ NCC</button>
                                 <button class="btn" style="border: 1px solid var(--warning); color: var(--warning);" onclick="showModal('XUAT')">Xuất/Điều chỉnh</button>
                             </div>
@@ -107,10 +107,18 @@
     <script>
         checkAuth();
         const user = getUser();
-        if (user && user.role === 'ADMIN') {
-            document.getElementById('menu-chi-nhanh').style.display = 'block';
-            document.getElementById('menu-nguoi-dung').style.display = 'block';
-            if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
+        if (user) {
+            if (user.role === 'ADMIN') {
+                if (document.getElementById('menu-chi-nhanh')) document.getElementById('menu-chi-nhanh').style.display = 'block';
+                if (document.getElementById('menu-nguoi-dung')) document.getElementById('menu-nguoi-dung').style.display = 'block';
+            }
+            if (user.role === 'ADMIN' || user.role === 'MANAGER') {
+                if (document.getElementById('menu-ncc')) document.getElementById('menu-ncc').style.display = 'block';
+            }
+        }
+        if (user && (user.role === 'ADMIN' || user.role === 'MANAGER')) {
+            const btnActions = document.getElementById('btnInventoryActions');
+            if (btnActions) btnActions.style.display = 'block';
         }
 
         let allProducts = [];

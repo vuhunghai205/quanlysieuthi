@@ -22,13 +22,13 @@ public class NhaCungCapController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<ApiResponse<NhaCungCap>> create(@RequestBody NhaCungCap req) {
         return ResponseEntity.ok(ApiResponse.success("Thành công", nhaCungCapRepository.save(req)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<ApiResponse<NhaCungCap>> update(@PathVariable Long id, @RequestBody NhaCungCap req) {
         NhaCungCap ncc = nhaCungCapRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy"));
         ncc.setTenNhaCungCap(req.getTenNhaCungCap());
