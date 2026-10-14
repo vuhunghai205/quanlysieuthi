@@ -9,7 +9,7 @@
     <style>
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -17,28 +17,38 @@
             background: var(--card);
             border-radius: var(--radius-lg);
             padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
         .stat-title {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-            font-weight: 500;
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .stat-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.5rem;
+            align-items: center;
+            padding: 0.65rem 0;
             border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
         }
         .stat-row:last-child {
             border-bottom: none;
-            margin-bottom: 0;
             padding-bottom: 0;
         }
-        .val-money { color: var(--primary); font-weight: 600; }
-        .val-num { color: var(--secondary); font-weight: 600; }
+        .val-money { color: var(--primary); font-weight: 700; font-size: 0.95rem; }
+        .val-num { color: var(--secondary); font-weight: 700; font-size: 0.95rem; }
     </style>
 </head>
 <body>
