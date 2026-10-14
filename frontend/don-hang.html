@@ -152,8 +152,16 @@
         </div>
     </div>
 
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=20261014_2"></script>
     <script>
+        window.getAnhUrl = window.getAnhUrl || function(path) {
+            if (!path) return "";
+            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) return path;
+            const baseHost = window.location.hostname || "localhost";
+            if (path.startsWith("/")) return `http://${baseHost}:8080${path}`;
+            return `http://${baseHost}:8080/${path}`;
+        };
+
         checkAuth();
         const user = getUser();
         if (user) {
@@ -296,7 +304,7 @@
                     alert('Vượt quá số lượng tồn kho!');
                     return;
                 }
-                cart.push({ spId, name: prod.tenSanPham, price: prod.giaBan, qty });
+                cart.push({ spId, name: prod.tenSanPham, price: prod.giaBan, anhUrl: prod.anhUrl, qty });
             }
             renderCart();
         }
@@ -311,14 +319,27 @@
             if (cart.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Giỏ hàng rỗng</td></tr>';
             } else {
-                tbody.innerHTML = cart.map(c => `
+                tbody.innerHTML = cart.map(c => {
+                    const imgUrl = c.anhUrl ? getAnhUrl(c.anhUrl) : '';
+                    const firstLetter = (c.name || 'S').charAt(0).toUpperCase();
+                    const imgEl = imgUrl 
+                        ? `<img src="${imgUrl}" alt="${c.name}" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display:none; width: 32px; height: 32px; border-radius: 4px; background: rgba(20,184,166,0.15); border: 1px solid var(--border); color: var(--primary); font-size: 0.8rem; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">${firstLetter}</div>`
+                        : `<div style="width: 32px; height: 32px; border-radius: 4px; background: rgba(20,184,166,0.15); border: 1px solid var(--border); color: var(--primary); font-size: 0.8rem; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">${firstLetter}</div>`;
+
+                    return `
                     <tr>
-                        <td style="font-size:0.9rem">${c.name}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                ${imgEl}
+                                <span style="font-size:0.875rem; font-weight: 500;">${c.name}</span>
+                            </div>
+                        </td>
                         <td>${c.qty}</td>
-                        <td>${new Intl.NumberFormat('vi-VN').format(c.price)}đ</td>
-                        <td><button class="btn" style="color:var(--danger); padding:2px 5px;" onclick="removeCart(${c.spId})">X</button></td>
+                        <td style="font-weight: 500;">${new Intl.NumberFormat('vi-VN').format(c.price)}đ</td>
+                        <td><button class="btn" style="color:var(--danger); padding:2px 6px; font-size: 0.8rem;" onclick="removeCart(${c.spId})">✕</button></td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
             }
             updateTotal();
         }

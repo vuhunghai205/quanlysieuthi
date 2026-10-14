@@ -18,6 +18,10 @@ logs/
 .DS_Store
 Thumbs.db
 
+# User uploads
+uploads/*
+!uploads/.gitkeep
+
 # Graphify outputs
 graphify-out/
 .graphify*

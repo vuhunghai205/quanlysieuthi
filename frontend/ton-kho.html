@@ -116,8 +116,16 @@
         </div>
     </div>
 
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=20261014_2"></script>
     <script>
+        window.getAnhUrl = window.getAnhUrl || function(path) {
+            if (!path) return "";
+            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) return path;
+            const baseHost = window.location.hostname || "localhost";
+            if (path.startsWith("/")) return `http://${baseHost}:8080${path}`;
+            return `http://${baseHost}:8080/${path}`;
+        };
+
         checkAuth();
         const user = getUser();
         if (user) {
@@ -170,10 +178,21 @@
                         ? `<td><span class="badge" style="background:var(--card-hover); border:1px solid var(--border); padding:0.25rem 0.55rem; font-size:0.75rem; border-radius:var(--radius-full);">${branchName}</span></td>` 
                         : '';
                     
+                    const imgUrl = sp.anhUrl ? getAnhUrl(sp.anhUrl) : '';
+                    const firstLetter = (sp.tenSanPham || 'S').charAt(0).toUpperCase();
+                    const imgEl = imgUrl 
+                        ? `<img src="${imgUrl}" alt="${sp.tenSanPham}" style="width: 40px; height: 40px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display:none; width: 40px; height: 40px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(16,185,129,0.15)); border: 1px solid var(--border); color: var(--primary); font-weight: bold; font-size: 1rem; align-items: center; justify-content: center; flex-shrink: 0;">${firstLetter}</div>`
+                        : `<div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(16,185,129,0.15)); border: 1px solid var(--border); color: var(--primary); font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${firstLetter}</div>`;
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td style="font-weight:600; color:var(--primary);">${sp.maSanPham}</td>
-                            <td>${sp.tenSanPham}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    ${imgEl}
+                                    <span style="font-weight: 500; color: var(--text-main);">${sp.tenSanPham}</span>
+                                </div>
+                            </td>
                             ${branchTd}
                             <td><small>${ncc}</small></td>
                             <td style="font-weight:bold; color:var(--text-main); font-size:1.05rem;">${sp.soLuongTon}</td>

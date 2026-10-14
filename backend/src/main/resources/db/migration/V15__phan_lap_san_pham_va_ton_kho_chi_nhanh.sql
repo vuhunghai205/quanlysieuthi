@@ -16,3 +16,4 @@ INSERT INTO giao_dich_ton_kho (san_pham_id, chi_nhanh_id, so_luong, loai_giao_di
 SELECT id, 2, so_luong_ton, 'NHAP', 'Nhập kho ban đầu chi nhánh HCM', 3 
 FROM san_pham 
 WHERE ma_san_pham IN ('SP014', 'SP015', 'SP016', 'SP017', 'SP018', 'SP019', 'SP020', 'SP021', 'SP022', 'SP023');
+

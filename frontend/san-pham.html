@@ -89,6 +89,32 @@
                     <label class="form-label">Tên sản phẩm</label>
                     <input type="text" id="sp_ten" class="form-control" required>
                 </div>
+                
+                <!-- Hình ảnh sản phẩm -->
+                <div class="form-group">
+                    <label class="form-label">Hình ảnh sản phẩm</label>
+                    <div style="display: flex; gap: 1rem; align-items: flex-start; background: var(--bg); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <!-- Khung xem trước ảnh -->
+                        <div id="imagePreviewContainer" style="width: 76px; height: 76px; border-radius: var(--radius-md); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--card); flex-shrink: 0; position: relative;">
+                            <img id="sp_preview_img" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <span id="sp_preview_placeholder" style="font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.2;">Chưa có ảnh</span>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                                <label class="btn" style="border: 1px solid var(--border); cursor: pointer; padding: 0.35rem 0.75rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 6px; background: var(--card);">
+                                    📁 Chọn file từ máy
+                                    <input type="file" id="sp_file_input" accept="image/*" style="display: none;" onchange="handleImageFileUpload(event)">
+                                </label>
+                                <button type="button" class="btn" id="btnRemoveImg" style="border: 1px solid var(--danger); color: var(--danger); padding: 0.35rem 0.65rem; font-size: 0.825rem; display: none;" onclick="removeImage()">Xóa ảnh</button>
+                                <span id="uploadSpinner" style="display: none; font-size: 0.8rem; color: var(--primary); align-items: center; gap: 4px;">⏳ Đang tải ảnh...</span>
+                            </div>
+                            <input type="text" id="sp_anh_url" class="form-control" placeholder="Hoặc dán URL ảnh (https://...)" style="font-size: 0.85rem;" oninput="handleImageUrlInput(event)">
+                            <small style="color: var(--text-muted); font-size: 0.725rem; margin-top: 4px; display: block;">Hỗ trợ JPG, PNG, WEBP (tối đa 5MB) hoặc link ảnh online.</small>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Nhà cung cấp</label>
                     <select id="sp_ncc" class="form-control" required></select>
@@ -119,8 +145,63 @@
         </div>
     </div>
 
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=20261014_2"></script>
     <script>
+        window.getAnhUrl = window.getAnhUrl || function(path) {
+            if (!path) return "";
+            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) return path;
+            const baseHost = window.location.hostname || "localhost";
+            if (path.startsWith("/")) return `http://${baseHost}:8080${path}`;
+            return `http://${baseHost}:8080/${path}`;
+        };
+
+        window.cropAndCompressImage = window.cropAndCompressImage || async function(file, targetSize = 600) {
+            return new Promise((resolve) => {
+                if (!file || !file.type || !file.type.startsWith('image/')) { resolve(file); return; }
+                const reader = new FileReader();
+                reader.onerror = () => resolve(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onerror = () => resolve(file);
+                    img.onload = () => {
+                        try {
+                            const minDim = Math.min(img.width, img.height);
+                            const startX = (img.width - minDim) / 2;
+                            const startY = (img.height - minDim) / 2;
+                            const canvas = document.createElement('canvas');
+                            canvas.width = targetSize;
+                            canvas.height = targetSize;
+                            const ctx = canvas.getContext('2d');
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = 'high';
+                            ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
+                            canvas.toBlob((blob) => {
+                                if (!blob) { resolve(file); return; }
+                                resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg" }));
+                            }, "image/jpeg", 0.88);
+                        } catch(err) { resolve(file); }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        window.taiLenAnh = window.taiLenAnh || async function(file) {
+            const processedFile = await window.cropAndCompressImage(file, 600);
+            const token = localStorage.getItem("hung_hai_mart_access_token");
+            const formData = new FormData();
+            formData.append("file", processedFile);
+            const response = await fetch(`${API_URL}/upload`, {
+                method: "POST",
+                headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+                body: formData
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || "Tải ảnh thất bại");
+            return result.data.url;
+        };
+
         checkAuth();
         const user = getUser();
         if (user) {
@@ -176,14 +257,28 @@
                         ? `<td><span class="badge" style="background:var(--card-hover); border:1px solid var(--border); padding:0.25rem 0.55rem; font-size:0.75rem; border-radius:var(--radius-full);">${branchName}</span></td>` 
                         : '';
 
+                    const imgUrl = sp.anhUrl ? getAnhUrl(sp.anhUrl) : '';
+                    const firstLetter = (sp.tenSanPham || 'S').charAt(0).toUpperCase();
+                    const imgEl = imgUrl 
+                        ? `<img src="${imgUrl}" alt="${sp.tenSanPham}" style="width: 44px; height: 44px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display:none; width: 44px; height: 44px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(16,185,129,0.15)); border: 1px solid var(--border); color: var(--primary); font-weight: bold; font-size: 1.1rem; align-items: center; justify-content: center; flex-shrink: 0;">${firstLetter}</div>`
+                        : `<div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(16,185,129,0.15)); border: 1px solid var(--border); color: var(--primary); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${firstLetter}</div>`;
+
                     tbody.innerHTML += `
                         <tr>
                             <td style="font-weight:600; color:var(--primary);">${sp.maSanPham}</td>
-                            <td>${sp.tenSanPham}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    ${imgEl}
+                                    <div>
+                                        <div style="font-weight: 500; color: var(--text-main); line-height: 1.3;">${sp.tenSanPham}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">${sp.donVi ? 'ĐVT: ' + sp.donVi : ''}</div>
+                                    </div>
+                                </div>
+                            </td>
                             ${branchTd}
                             <td><small>${ncc}</small></td>
-                            <td style="font-weight:500;">${price}</td>
-                            <td><strong>${sp.soLuongTon}</strong> ${sp.donVi || ''}</td>
+                            <td style="font-weight:600; color: var(--primary);">${price}</td>
+                            <td><strong>${sp.soLuongTon}</strong></td>
                             <td>${status}</td>
                             <td>${actions || '-'}</td>
                         </tr>
@@ -196,11 +291,76 @@
             }
         }
 
+        function updateImagePreview(url) {
+            const img = document.getElementById('sp_preview_img');
+            const placeholder = document.getElementById('sp_preview_placeholder');
+            const btnRemove = document.getElementById('btnRemoveImg');
+            
+            if (url) {
+                img.src = getAnhUrl(url);
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+                btnRemove.style.display = 'inline-block';
+            } else {
+                img.src = '';
+                img.style.display = 'none';
+                placeholder.style.display = 'block';
+                btnRemove.style.display = 'none';
+            }
+        }
+
+        async function handleImageFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const spinner = document.getElementById('uploadSpinner');
+            if (spinner) spinner.style.display = 'inline-flex';
+
+            try {
+                // Tự động crop vuông và nén ảnh to
+                const croppedFile = await window.cropAndCompressImage(file, 600);
+
+                // Xem trước ảnh ngay lập tức
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    updateImagePreview(event.target.result);
+                };
+                reader.readAsDataURL(croppedFile);
+
+                const uploadModalError = document.getElementById('modalError');
+                if (uploadModalError) uploadModalError.style.display = 'none';
+                
+                const uploadedUrl = await window.taiLenAnh(croppedFile);
+                document.getElementById('sp_anh_url').value = uploadedUrl;
+                updateImagePreview(uploadedUrl);
+            } catch (err) {
+                const errDiv = document.getElementById('modalError');
+                if (errDiv) {
+                    errDiv.textContent = 'Lỗi tải ảnh: ' + err.message;
+                    errDiv.style.display = 'block';
+                }
+                updateImagePreview('');
+            } finally {
+                if (spinner) spinner.style.display = 'none';
+            }
+        }
+
+        function handleImageUrlInput(e) {
+            updateImagePreview(e.target.value.trim());
+        }
+
+        function removeImage() {
+            document.getElementById('sp_anh_url').value = '';
+            document.getElementById('sp_file_input').value = '';
+            updateImagePreview('');
+        }
+
         async function showModal() {
             document.getElementById('productForm').reset();
             document.getElementById('sp_id').value = '';
             document.getElementById('modalTitle').textContent = 'Thêm sản phẩm';
             document.getElementById('modalError').style.display = 'none';
+            removeImage();
             try { 
                 const [nccRes, cnRes] = await Promise.all([
                     goiApi("/nha-cung-cap"),
@@ -227,6 +387,8 @@
             document.getElementById('sp_gia_ban').value = sp.giaBan;
             document.getElementById('sp_gia_von').value = sp.giaVon;
             document.getElementById('sp_don_vi').value = sp.donVi;
+            document.getElementById('sp_anh_url').value = sp.anhUrl || '';
+            updateImagePreview(sp.anhUrl);
             try { 
                 const [nccRes, cnRes] = await Promise.all([
                     goiApi("/nha-cung-cap"),
@@ -252,6 +414,7 @@
                 giaBan: parseFloat(document.getElementById('sp_gia_ban').value),
                 giaVon: parseFloat(document.getElementById('sp_gia_von').value),
                 donVi: document.getElementById('sp_don_vi').value,
+                anhUrl: document.getElementById('sp_anh_url').value.trim() || null,
                 hoatDong: true
             };
             if (user && user.role === 'ADMIN' && document.getElementById('sp_chinhanh').value) {
