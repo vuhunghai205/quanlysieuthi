@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import com.hunghaimart.entity.NguoiDung;
+import com.hunghaimart.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -28,8 +32,18 @@ public class DashboardController {
     private final KhachHangRepository khachHangRepository;
 
     @GetMapping("/tong-quan")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getTongQuan() {
-        List<DonHang> allOrders = donHangRepository.findAll();
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getTongQuan(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<DonHang> allOrders;
+        if (userDetails != null && userDetails.getNguoiDung() != null) {
+            NguoiDung user = userDetails.getNguoiDung();
+            if ("ADMIN".equals(user.getVaiTro()) || user.getChiNhanh() == null) {
+                allOrders = donHangRepository.findAll();
+            } else {
+                allOrders = donHangRepository.findByChiNhanhId(user.getChiNhanh().getId());
+            }
+        } else {
+            allOrders = donHangRepository.findAll();
+        }
         List<KhachHang> allCustomers = khachHangRepository.findAll();
         
         LocalDate today = LocalDate.now();

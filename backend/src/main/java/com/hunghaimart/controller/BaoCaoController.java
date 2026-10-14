@@ -17,7 +17,9 @@ import java.time.temporal.WeekFields;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import com.hunghaimart.entity.NguoiDung;
+import com.hunghaimart.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/api/bao-cao")
@@ -28,8 +30,18 @@ public class BaoCaoController {
 
     @GetMapping("/tong-quan")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getBaoCaoTongQuan() {
-        List<DonHang> allOrders = donHangRepository.findAll();
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getBaoCaoTongQuan(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<DonHang> allOrders;
+        if (userDetails != null && userDetails.getNguoiDung() != null) {
+            NguoiDung user = userDetails.getNguoiDung();
+            if ("ADMIN".equals(user.getVaiTro()) || user.getChiNhanh() == null) {
+                allOrders = donHangRepository.findAll();
+            } else {
+                allOrders = donHangRepository.findByChiNhanhId(user.getChiNhanh().getId());
+            }
+        } else {
+            allOrders = donHangRepository.findAll();
+        }
         
         LocalDate today = LocalDate.now();
         int currentWeek = today.get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear());

@@ -9,3 +9,4 @@ WHERE email IN (
     'staff.hn@hunghaimart.vn',
     'staff.hcm@hunghaimart.vn'
 );
+

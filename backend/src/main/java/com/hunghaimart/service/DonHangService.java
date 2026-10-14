@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.hunghaimart.security.CustomUserDetails;
+
 @Service
 @RequiredArgsConstructor
 public class DonHangService {
@@ -27,7 +29,15 @@ public class DonHangService {
     private final SanPhamRepository sanPhamRepository;
     private final GiaoDichTonKhoRepository giaoDichTonKhoRepository;
 
-    public List<DonHang> getAll() {
+    public List<DonHang> getAll(CustomUserDetails userDetails) {
+        if (userDetails != null && userDetails.getNguoiDung() != null) {
+            NguoiDung user = userDetails.getNguoiDung();
+            if ("ADMIN".equals(user.getVaiTro()) || user.getChiNhanh() == null) {
+                return donHangRepository.findAll();
+            } else {
+                return donHangRepository.findByChiNhanhId(user.getChiNhanh().getId());
+            }
+        }
         return donHangRepository.findAll();
     }
 
@@ -41,8 +51,14 @@ public class DonHangService {
         NguoiDung nguoiTao = nguoiDungRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng không hợp lệ"));
         
-        ChiNhanh chiNhanh = chiNhanhRepository.findById(request.getChiNhanhId())
-                .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh không tồn tại"));
+        ChiNhanh chiNhanh;
+        if (nguoiTao.getChiNhanh() != null) {
+            chiNhanh = nguoiTao.getChiNhanh();
+        } else {
+            Long cnId = request.getChiNhanhId() != null ? request.getChiNhanhId() : 1L;
+            chiNhanh = chiNhanhRepository.findById(cnId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh không tồn tại"));
+        }
 
         // Xử lý Khách hàng (Tạo mới hoặc Lấy cũ)
         KhachHang khachHang = null;

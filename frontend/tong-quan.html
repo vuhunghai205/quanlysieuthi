@@ -79,7 +79,10 @@
             </header>
             
             <div class="content-body">
-                <h2 style="margin-bottom: 1.5rem;">Tổng quan hoạt động</h2>
+                <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                    <span>Tổng quan hoạt động</span>
+                    <span id="branchBadge" style="font-size: 0.875rem; font-weight: 500; color: var(--primary); background: var(--primary-light); padding: 0.35rem 0.85rem; border-radius: var(--radius-full); border: 1px solid var(--mint);"></span>
+                </h2>
                 
                 <div id="dashError" class="alert alert-danger" style="display:none;"></div>
                 
@@ -121,6 +124,11 @@
         const user = getUser();
         if (user) {
             document.getElementById('userInfo').textContent = `${user.fullName || user.email} (${user.role})`;
+            
+            const branchText = user.role === 'ADMIN' ? 'Toàn hệ thống (Tất cả chi nhánh)' : (user.branch === 1 ? 'Chi nhánh Hà Nội' : (user.branch === 2 ? 'Chi nhánh TP. Hồ Chí Minh' : `Chi nhánh #${user.branch}`));
+            const bBadge = document.getElementById('branchBadge');
+            if (bBadge) bBadge.textContent = `📍 Dữ liệu: ${branchText}`;
+
             if (user.role === 'ADMIN') {
                 if (document.getElementById('menu-chi-nhanh')) document.getElementById('menu-chi-nhanh').style.display = 'block';
                 if (document.getElementById('menu-nguoi-dung')) document.getElementById('menu-nguoi-dung').style.display = 'block';

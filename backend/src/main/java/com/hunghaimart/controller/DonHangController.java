@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.hunghaimart.security.CustomUserDetails;
+
 @RestController
 @RequestMapping("/api/don-hang")
 @RequiredArgsConstructor
@@ -21,8 +23,8 @@ public class DonHangController {
     private final DonHangService donHangService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DonHang>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đơn hàng thành công", donHangService.getAll()));
+    public ResponseEntity<ApiResponse<List<DonHang>>> getAll(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đơn hàng thành công", donHangService.getAll(userDetails)));
     }
 
     @GetMapping("/{id}")

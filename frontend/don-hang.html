@@ -226,6 +226,12 @@
                 
                 const cnSelect = document.getElementById('dh_chi_nhanh');
                 cnSelect.innerHTML = cnRes.data.map(c => `<option value="${c.id}">${c.tenChiNhanh}</option>`).join('');
+                if (user && user.branch) {
+                    cnSelect.value = user.branch;
+                    if (user.role !== 'ADMIN') {
+                        cnSelect.disabled = true;
+                    }
+                }
                 
                 const spList = document.getElementById('sp_list');
                 spList.innerHTML = products.map(s => `<option data-id="${s.id}" value="${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ"></option>`).join('');
@@ -343,7 +349,7 @@
             btn.textContent = "Đang xử lý...";
             
             const data = {
-                chiNhanhId: parseInt(document.getElementById('dh_chi_nhanh').value),
+                chiNhanhId: (user && user.branch) ? user.branch : parseInt(document.getElementById('dh_chi_nhanh').value),
                 soDienThoai: document.getElementById('dh_kh_sdt').value.trim(),
                 tenKhachHang: document.getElementById('dh_kh_ten').value.trim(),
                 diemSuDung: parseInt(document.getElementById('dh_diem_su_dung').value) || 0,
