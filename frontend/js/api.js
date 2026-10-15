@@ -127,4 +127,85 @@ async function taiLenAnh(file) {
 }
 window.taiLenAnh = taiLenAnh;
 
+// Âm thanh thông báo ting ting khi thanh toán thành công (Web Audio API không cần load file ngoài)
+function playTingTingSound() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        
+        // Nốt 1 (D5 ~ 587 Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.35);
+
+        // Nốt 2 (A5 ~ 880 Hz) - vang cao, tạo cảm giác ting ting như app ngân hàng
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.12);
+        gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.12);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.12);
+        osc2.stop(ctx.currentTime + 0.9);
+    } catch (e) {
+        console.warn("AudioContext error", e);
+    }
+}
+window.playTingTingSound = playTingTingSound;
+
+// Âm thanh bíp súng quét mã vạch siêu thị (1760Hz - nốt A6, 70ms ngắn gọn, đanh và rõ)
+function playBarcodeBeep() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1760, ctx.currentTime);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.07);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.07);
+    } catch(e) {}
+}
+window.playBarcodeBeep = playBarcodeBeep;
+
+// Âm thanh bíp lỗi khi không tìm thấy mã vạch
+function playErrorBeep() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(240, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.18);
+    } catch(e) {}
+}
+window.playErrorBeep = playErrorBeep;
+
 

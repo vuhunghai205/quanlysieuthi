@@ -45,6 +45,9 @@ public class DonHang {
     @Column(name = "trang_thai_thanh_toan", nullable = false)
     private String trangThaiThanhToan;
 
+    @Column(name = "phuong_thuc_thanh_toan")
+    private String phuongThucThanhToan;
+
     @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ChiTietDonHang> chiTietDonHangs;
 

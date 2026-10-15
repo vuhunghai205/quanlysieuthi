@@ -80,6 +80,10 @@ public class DonHangService {
             }
         }
 
+        String pttt = (request.getPhuongThucThanhToan() != null && !request.getPhuongThucThanhToan().trim().isEmpty())
+                ? request.getPhuongThucThanhToan().trim().toUpperCase()
+                : "TIEN_MAT";
+
         DonHang donHang = DonHang.builder()
                 .maDonHang("DH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .chiNhanh(chiNhanh)
@@ -87,6 +91,7 @@ public class DonHangService {
                 .khachHang(khachHang)
                 .trangThai("HOAN_THANH")
                 .trangThaiThanhToan("DA_THANH_TOAN")
+                .phuongThucThanhToan(pttt)
                 .tongTien(BigDecimal.ZERO)
                 .giamGia(BigDecimal.ZERO)
                 .chiTietDonHangs(new ArrayList<>())

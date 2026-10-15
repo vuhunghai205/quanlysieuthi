@@ -19,6 +19,9 @@ public class DonHangRequest {
     @NotNull(message = "Chi nhánh không được để trống")
     private Long chiNhanhId;
 
+    // Phương thức thanh toán (TIEN_MAT, CHUYEN_KHOAN)
+    private String phuongThucThanhToan;
+
     @NotEmpty(message = "Đơn hàng phải có ít nhất 1 sản phẩm")
     @Valid
     private List<ChiTietDonHangRequest> chiTiet;

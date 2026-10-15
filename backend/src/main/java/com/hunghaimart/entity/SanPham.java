@@ -24,6 +24,9 @@ public class SanPham {
     @Column(name = "ma_san_pham", nullable = false, unique = true)
     private String maSanPham;
 
+    @Column(name = "ma_vach")
+    private String maVach;
+
     @Column(name = "mo_ta")
     private String moTa;
 

@@ -73,75 +73,140 @@
         </main>
     </div>
 
-    <!-- Modal Form -->
+    <!-- Modal Form Thêm/Sửa Sản Phẩm -->
     <div class="modal" id="productModal">
-        <div class="modal-content">
-            <h3 id="modalTitle" style="margin-bottom: 1rem; color: var(--primary);">Thêm sản phẩm</h3>
-            <div id="modalError" class="alert alert-danger"></div>
+        <div class="modal-content" style="max-width: 680px; width: 95vw; max-height: 90vh; padding: 1.25rem 1.5rem; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.25rem;">📦</span>
+                    <h3 id="modalTitle" style="margin: 0; color: var(--primary); font-size: 1.15rem;">Thêm sản phẩm mới</h3>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="hideModal()" style="border: 1px solid var(--border); padding: 4px 8px;">✕</button>
+            </div>
+
+            <div id="modalError" class="alert alert-danger" style="margin-bottom: 0.75rem;"></div>
+
             <form id="productForm">
                 <input type="hidden" id="sp_id">
                 
-                <div class="form-group">
-                    <label class="form-label">Mã SP</label>
-                    <input type="text" id="sp_ma" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Tên sản phẩm</label>
-                    <input type="text" id="sp_ten" class="form-control" required>
-                </div>
-                
-                <!-- Hình ảnh sản phẩm -->
-                <div class="form-group">
-                    <label class="form-label">Hình ảnh sản phẩm</label>
-                    <div style="display: flex; gap: 1rem; align-items: flex-start; background: var(--bg); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                        <!-- Khung xem trước ảnh -->
-                        <div id="imagePreviewContainer" style="width: 76px; height: 76px; border-radius: var(--radius-md); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--card); flex-shrink: 0; position: relative;">
-                            <img id="sp_preview_img" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                            <span id="sp_preview_placeholder" style="font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.2;">Chưa có ảnh</span>
+                <!-- Hàng 1: Mã vạch (Ưu tiên số 1) & Mã SP (Tự động sinh) -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem;">
+                    <div style="flex: 1.3;">
+                        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-weight: 600;">Mã vạch (Barcode)</span>
+                            <span style="font-size: 0.72rem; color: var(--primary);">Bắn súng quét hoặc bấm Quét</span>
+                        </label>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="text" id="sp_ma_vach" class="form-control" placeholder="⚡ Quét mã vạch trên vỏ SP..." onkeydown="handleBarcodeFormKeyDown(event)">
+                            <button type="button" class="btn" style="border: 1px solid var(--border); display: flex; align-items: center; gap: 4px; padding: 0.4rem 0.65rem; font-size: 0.85rem; white-space: nowrap;" onclick="moCameraScannerSanPham()" title="Bật Camera quét mã vạch">
+                                <span>📷</span> Quét
+                            </button>
                         </div>
-                        
-                        <div style="flex: 1;">
-                            <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
-                                <label class="btn" style="border: 1px solid var(--border); cursor: pointer; padding: 0.35rem 0.75rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 6px; background: var(--card);">
-                                    📁 Chọn file từ máy
-                                    <input type="file" id="sp_file_input" accept="image/*" style="display: none;" onchange="handleImageFileUpload(event)">
-                                </label>
-                                <button type="button" class="btn" id="btnRemoveImg" style="border: 1px solid var(--danger); color: var(--danger); padding: 0.35rem 0.65rem; font-size: 0.825rem; display: none;" onclick="removeImage()">Xóa ảnh</button>
-                                <span id="uploadSpinner" style="display: none; font-size: 0.8rem; color: var(--primary); align-items: center; gap: 4px;">⏳ Đang tải ảnh...</span>
-                            </div>
-                            <input type="text" id="sp_anh_url" class="form-control" placeholder="Hoặc dán URL ảnh (https://...)" style="font-size: 0.85rem;" oninput="handleImageUrlInput(event)">
-                            <small style="color: var(--text-muted); font-size: 0.725rem; margin-top: 4px; display: block;">Hỗ trợ JPG, PNG, WEBP (tối đa 5MB) hoặc link ảnh online.</small>
+                    </div>
+                    <div style="flex: 0.9;">
+                        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span>Mã SP</span>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">(Tự sinh)</span>
+                        </label>
+                        <input type="text" id="sp_ma" class="form-control" placeholder="Tự sinh nếu để trống...">
+                        <small style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 2px;">Không có mã vạch mới cần tự đặt</small>
+                    </div>
+                </div>
+
+                <!-- Hàng 2: Tên sản phẩm -->
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                    <label class="form-label" style="margin-bottom: 4px;">Tên sản phẩm <span style="color:var(--danger)">*</span></label>
+                    <input type="text" id="sp_ten" class="form-control" required placeholder="Ví dụ: Mì Hảo Hảo tôm chua cay 75g">
+                </div>
+
+                <!-- Hàng 3: Giá bán & Giá vốn -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem;">
+                    <div style="flex: 1;">
+                        <label class="form-label" style="margin-bottom: 4px;">Giá bán (đ) <span style="color:var(--danger)">*</span></label>
+                        <input type="number" id="sp_gia_ban" class="form-control" required placeholder="10000" min="0">
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-label" style="margin-bottom: 4px;">Giá vốn (đ) <span style="color:var(--danger)">*</span></label>
+                        <input type="number" id="sp_gia_von" class="form-control" required placeholder="8000" min="0">
+                    </div>
+                </div>
+
+                <!-- Hàng 4: Nhà cung cấp & Đơn vị tính -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem;">
+                    <div style="flex: 1.2;">
+                        <label class="form-label" style="margin-bottom: 4px;">Nhà cung cấp <span style="color:var(--danger)">*</span></label>
+                        <select id="sp_ncc" class="form-control" required></select>
+                    </div>
+                    <div style="flex: 0.8;">
+                        <label class="form-label" style="margin-bottom: 4px;">Đơn vị tính</label>
+                        <input type="text" id="sp_don_vi" class="form-control" placeholder="Gói, Lon, Chai, Cái...">
+                    </div>
+                </div>
+
+                <!-- Hàng 5: Chi nhánh (Dành cho ADMIN) -->
+                <div class="form-group" id="group_chinhanh" style="display:none; margin-bottom: 0.75rem;">
+                    <label class="form-label" style="margin-bottom: 4px;">Chi nhánh</label>
+                    <select id="sp_chinhanh" class="form-control"></select>
+                </div>
+
+                <!-- Hàng 6: Hình ảnh sản phẩm (Gọn gàng) -->
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label class="form-label" style="margin-bottom: 4px;">Hình ảnh sản phẩm (tự động crop vuông & nén)</label>
+                    <div style="display: flex; gap: 0.75rem; align-items: center; background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <div id="imagePreviewContainer" style="width: 52px; height: 52px; border-radius: 6px; border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--card); flex-shrink: 0;">
+                            <img id="sp_preview_img" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <span id="sp_preview_placeholder" style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">Chưa có</span>
+                        </div>
+                        <div style="flex: 1; display: flex; gap: 6px; align-items: center;">
+                            <label class="btn btn-sm" style="border: 1px solid var(--border); cursor: pointer; padding: 0.35rem 0.65rem; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; background: var(--card); white-space: nowrap;">
+                                📁 Chọn file
+                                <input type="file" id="sp_file_input" accept="image/*" style="display: none;" onchange="handleImageFileUpload(event)">
+                            </label>
+                            <input type="text" id="sp_anh_url" class="form-control" placeholder="Hoặc dán URL ảnh online (https://...)" style="font-size: 0.8rem; padding: 0.35rem 0.6rem;" oninput="handleImageUrlInput(event)">
+                            <button type="button" class="btn btn-sm" id="btnRemoveImg" style="border: 1px solid var(--danger); color: var(--danger); padding: 0.35rem 0.6rem; font-size: 0.78rem; display: none;" onclick="removeImage()">✕</button>
+                            <span id="uploadSpinner" style="display: none; font-size: 0.75rem; color: var(--primary);">⏳ Đang tải...</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Nhà cung cấp</label>
-                    <select id="sp_ncc" class="form-control" required></select>
-                </div>
-                <div class="form-group" id="group_chinhanh" style="display:none;">
-                    <label class="form-label">Chi nhánh</label>
-                    <select id="sp_chinhanh" class="form-control"></select>
-                </div>
-                <div class="form-group" style="display: flex; gap: 1rem;">
-                    <div style="flex: 1;">
-                        <label class="form-label">Giá bán</label>
-                        <input type="number" id="sp_gia_ban" class="form-control" required>
-                    </div>
-                    <div style="flex: 1;">
-                        <label class="form-label">Giá vốn</label>
-                        <input type="number" id="sp_gia_von" class="form-control" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Đơn vị tính</label>
-                    <input type="text" id="sp_don_vi" class="form-control" placeholder="Cái, Hộp, Chai...">
-                </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <!-- Footer Buttons -->
+                <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
                     <button type="button" class="btn" style="flex: 1; border: 1px solid var(--border);" onclick="hideModal()">Hủy</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Lưu</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1.5; font-weight: 600;">Lưu sản phẩm</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Quét Mã Vạch Bằng Camera khi thêm SP -->
+    <div class="modal" id="cameraModalSp" style="z-index: 120;">
+        <div class="modal-content" style="max-width: 440px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 1.2rem;">📷</span>
+                    <strong style="color: var(--primary); font-size: 1.05rem;">Quét mã vạch sản phẩm</strong>
+                </div>
+                <button class="btn btn-sm" onclick="dongCameraScannerSanPham()" style="border: 1px solid var(--border); padding: 2px 8px;">✕ Đóng</button>
+            </div>
+
+            <div style="position: relative; width: 100%; height: 260px; background: #000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <video id="cameraVideoSp" playsinline autoplay muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <div style="position: absolute; width: 75%; height: 50%; border: 2px solid #10b981; border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);">
+                    <div style="position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: #ef4444; box-shadow: 0 0 8px #ef4444;"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 0.75rem; font-size: 0.82rem; color: var(--text-muted);">
+                Đưa mã vạch trên vỏ sản phẩm vào giữa tia laser đỏ để đọc
+            </div>
+
+            <div id="cameraStatusSp" style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--primary); min-height: 22px;">
+                Đang khởi động camera...
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; justify-content: center;">
+                <button type="button" class="btn" style="border: 1px solid var(--border); width: 100%;" onclick="dongCameraScannerSanPham()">Đóng Camera</button>
+            </div>
         </div>
     </div>
 
@@ -263,9 +328,11 @@
                         ? `<img src="${imgUrl}" alt="${sp.tenSanPham}" style="width: 44px; height: 44px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display:none; width: 44px; height: 44px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(16,185,129,0.15)); border: 1px solid var(--border); color: var(--primary); font-weight: bold; font-size: 1.1rem; align-items: center; justify-content: center; flex-shrink: 0;">${firstLetter}</div>`
                         : `<div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(16,185,129,0.15)); border: 1px solid var(--border); color: var(--primary); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${firstLetter}</div>`;
 
+                    const barcodeBadge = sp.maVach ? `<br><small style="color:var(--text-muted); font-size:0.72rem; font-family:monospace; font-weight:normal;">🏷️ ${sp.maVach}</small>` : '';
+
                     tbody.innerHTML += `
                         <tr>
-                            <td style="font-weight:600; color:var(--primary);">${sp.maSanPham}</td>
+                            <td style="font-weight:600; color:var(--primary);">${sp.maSanPham}${barcodeBadge}</td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 12px;">
                                     ${imgEl}
@@ -355,9 +422,86 @@
             updateImagePreview('');
         }
 
+        function sinhMaSanPhamTuDong() {
+            return 'SP' + Math.floor(100000 + Math.random() * 900000);
+        }
+
+        let cameraStreamSp = null;
+        let barcodeDetectorTimerSp = null;
+
+        function handleBarcodeFormKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const val = document.getElementById('sp_ma_vach').value.trim();
+                if (val && window.playBarcodeBeep) {
+                    window.playBarcodeBeep();
+                }
+                document.getElementById('sp_ten').focus();
+            }
+        }
+
+        async function moCameraScannerSanPham() {
+            const modal = document.getElementById('cameraModalSp');
+            const video = document.getElementById('cameraVideoSp');
+            const status = document.getElementById('cameraStatusSp');
+            modal.style.display = 'flex';
+            status.textContent = "Đang khởi động camera...";
+
+            try {
+                cameraStreamSp = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" } }
+                });
+                video.srcObject = cameraStreamSp;
+                await video.play();
+                status.textContent = "🟢 Camera đã sẵn sàng! Đưa mã vạch vào khung";
+
+                if ('BarcodeDetector' in window) {
+                    const detector = new BarcodeDetector({
+                        formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'upc_a']
+                    });
+
+                    barcodeDetectorTimerSp = setInterval(async () => {
+                        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                            try {
+                                const barcodes = await detector.detect(video);
+                                if (barcodes.length > 0) {
+                                    const code = barcodes[0].rawValue;
+                                    status.textContent = "⚡ Đã đọc mã: " + code;
+                                    dongCameraScannerSanPham();
+                                    document.getElementById('sp_ma_vach').value = code;
+                                    if (window.playBarcodeBeep) window.playBarcodeBeep();
+                                    document.getElementById('sp_ten').focus();
+                                }
+                            } catch (err) {}
+                        }
+                    }, 250);
+                } else {
+                    status.innerHTML = `<span style="color:#f59e0b; font-size:0.8rem;">Trình duyệt chưa hỗ trợ BarcodeDetector. Bạn có thể dùng súng quét mã vạch USB hoặc gõ mã trực tiếp!</span>`;
+                }
+            } catch (err) {
+                status.innerHTML = `<span style="color:var(--danger); font-size:0.8rem;">Không thể mở camera: ${err.message}</span>`;
+            }
+        }
+
+        function dongCameraScannerSanPham() {
+            if (barcodeDetectorTimerSp) {
+                clearInterval(barcodeDetectorTimerSp);
+                barcodeDetectorTimerSp = null;
+            }
+            if (cameraStreamSp) {
+                cameraStreamSp.getTracks().forEach(t => t.stop());
+                cameraStreamSp = null;
+            }
+            const modal = document.getElementById('cameraModalSp');
+            if (modal) modal.style.display = 'none';
+        }
+
         async function showModal() {
             document.getElementById('productForm').reset();
             document.getElementById('sp_id').value = '';
+            document.getElementById('sp_ma_vach').value = '';
+            // Tự động sinh mã SP sẵn, người dùng không cần phải tự nghĩ và gõ
+            document.getElementById('sp_ma').value = sinhMaSanPhamTuDong();
             document.getElementById('modalTitle').textContent = 'Thêm sản phẩm';
             document.getElementById('modalError').style.display = 'none';
             removeImage();
@@ -372,9 +516,14 @@
                 }
             } catch(e){}
             document.getElementById('productModal').style.display = 'flex';
+            setTimeout(() => {
+                const vachInput = document.getElementById('sp_ma_vach');
+                if (vachInput) vachInput.focus();
+            }, 150);
         }
 
         function hideModal() {
+            dongCameraScannerSanPham();
             document.getElementById('productModal').style.display = 'none';
         }
 
@@ -383,6 +532,7 @@
             document.getElementById('modalError').style.display = 'none';
             document.getElementById('sp_id').value = sp.id;
             document.getElementById('sp_ma').value = sp.maSanPham;
+            document.getElementById('sp_ma_vach').value = sp.maVach || '';
             document.getElementById('sp_ten').value = sp.tenSanPham;
             document.getElementById('sp_gia_ban').value = sp.giaBan;
             document.getElementById('sp_gia_von').value = sp.giaVon;
@@ -407,13 +557,22 @@
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('sp_id').value;
+            let maSp = document.getElementById('sp_ma').value.trim();
+            const maVach = document.getElementById('sp_ma_vach').value.trim() || null;
+            
+            // Nếu người dùng bỏ trống mã SP, tự sinh mã SP
+            if (!maSp) {
+                maSp = maVach ? ('SP' + maVach.slice(-6)) : sinhMaSanPhamTuDong();
+            }
+
             const data = {
-                maSanPham: document.getElementById('sp_ma').value,
-                tenSanPham: document.getElementById('sp_ten').value,
+                maSanPham: maSp,
+                maVach: maVach,
+                tenSanPham: document.getElementById('sp_ten').value.trim(),
                 nhaCungCapId: parseInt(document.getElementById('sp_ncc').value),
                 giaBan: parseFloat(document.getElementById('sp_gia_ban').value),
                 giaVon: parseFloat(document.getElementById('sp_gia_von').value),
-                donVi: document.getElementById('sp_don_vi').value,
+                donVi: document.getElementById('sp_don_vi').value.trim() || null,
                 anhUrl: document.getElementById('sp_anh_url').value.trim() || null,
                 hoatDong: true
             };

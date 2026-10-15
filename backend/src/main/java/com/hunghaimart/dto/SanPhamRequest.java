@@ -13,6 +13,8 @@ public class SanPhamRequest {
     @NotBlank(message = "Mã sản phẩm không được để trống")
     private String maSanPham;
 
+    private String maVach;
+
     private String moTa;
     private Long danhMucId;
     private Long nhaCungCapId;

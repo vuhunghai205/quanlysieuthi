@@ -10,11 +10,217 @@
         .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .table th, .table td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
         .table th { background-color: var(--mint); color: var(--primary); }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: var(--card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto;}
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         
         .cart-table th, .cart-table td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
         .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+
+        /* Payment Method Selector */
+        .pay-method-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border);
+            background: var(--bg);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .pay-method-card:hover {
+            border-color: rgba(20, 184, 166, 0.5);
+            background: rgba(20, 184, 166, 0.05);
+        }
+        .pay-method-card.active {
+            border-color: var(--primary);
+            background: rgba(20, 184, 166, 0.12);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        /* VietQR Scanner Styling */
+        .qr-wrapper {
+            position: relative;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: inline-block;
+            overflow: hidden;
+        }
+        .qr-scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #10b981, #14b8a6, transparent);
+            box-shadow: 0 0 10px #10b981;
+            animation: scanAnim 2.2s ease-in-out infinite alternate;
+        }
+        @keyframes scanAnim {
+            0% { top: 4%; }
+            100% { top: 96%; }
+        }
+        .pulse-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #10b981;
+            display: inline-block;
+            animation: pulseRing 1.6s infinite;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .copy-pill {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        .copy-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Thermal POS Receipt Design (K80 / K57) */
+        .receipt-paper {
+            background: #ffffff;
+            color: #111827;
+            padding: 1.25rem 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace, 'Consolas', sans-serif;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .receipt-paper .dashed-line {
+            border-top: 1px dashed #6b7280;
+            margin: 0.6rem 0;
+        }
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .receipt-table th {
+            text-align: left;
+            padding: 4px 0;
+            border-bottom: 1px dashed #9ca3af;
+            color: #374151;
+        }
+        .receipt-table td {
+            padding: 4px 0;
+        }
+
+        /* Quick item pills (cho mặt hàng không mã như Lavie 19L, đá, trứng...) */
+        .quick-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .quick-pill:hover {
+            border-color: var(--primary);
+            background: rgba(20, 184, 166, 0.12);
+            transform: translateY(-1px);
+        }
+        .quick-pill:active {
+            transform: scale(0.96);
+        }
+        .scan-flash {
+            animation: flashRow 0.8s ease-out;
+        }
+        @keyframes flashRow {
+            0% { background-color: rgba(20, 184, 166, 0.4); }
+            100% { background-color: transparent; }
+        }
+
+        /* Camera Scanner Viewfinder */
+        .camera-viewfinder {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scan-crosshair {
+            position: absolute;
+            width: 200px;
+            height: 140px;
+            border: 2px dashed #10b981;
+            border-radius: 8px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+        .scan-crosshair::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 2px;
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+            animation: redLaser 1.5s infinite alternate ease-in-out;
+        }
+        @keyframes redLaser {
+            0% { top: 10%; }
+            100% { top: 90%; }
+        }
+
+        /* Print Mode */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+            #printableReceipt, #printableReceipt * {
+                visibility: visible !important;
+            }
+            #printableReceipt {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 76mm !important;
+                margin: 0 !important;
+                padding: 3mm !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: 'Courier New', Courier, monospace, sans-serif !important;
+                font-size: 11px !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            @page {
+                size: 80mm auto;
+                margin: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -55,13 +261,15 @@
                             <tr>
                                 <th>Mã đơn</th>
                                 <th>Khách hàng</th>
+                                <th>Hình thức</th>
                                 <th>Giảm giá</th>
                                 <th>Khách phải trả</th>
                                 <th>Thời gian</th>
+                                <th style="text-align: center;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr><td colspan="5">Đang tải...</td></tr>
+                            <tr><td colspan="7">Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -71,88 +279,281 @@
 
     <!-- Modal Form Bán Hàng -->
     <div class="modal" id="orderModal">
-        <div class="modal-content">
-            <h3 style="margin-bottom: 1rem; color: var(--primary);">🛒 Hệ thống POS - Bán hàng</h3>
-            <div id="modalError" class="alert alert-danger"></div>
+        <div class="modal-content" style="max-width: 1040px; width: 95vw; max-height: 92vh; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.3rem;">🛒</span>
+                    <h3 style="margin: 0; color: var(--primary); font-size: 1.15rem;">Hệ thống POS - Bán hàng</h3>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="hideModal()" style="border: 1px solid var(--border); padding: 4px 10px;">✕ Đóng</button>
+            </div>
             
-            <div style="display: flex; gap: 2rem;">
-                <!-- Cột trái: Thông tin Khách hàng -->
-                <div style="flex: 1; border-right: 1px solid var(--border); padding-right: 1rem;">
-                    <h4 style="margin-bottom: 1rem;">Thông tin khách hàng</h4>
+            <div id="modalError" class="alert alert-danger" style="margin-bottom: 0.75rem;"></div>
+            
+            <div style="display: flex; gap: 1.25rem; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding-right: 2px;">
+                <!-- Cột trái: Thông tin Khách hàng & Chi nhánh -->
+                <div style="width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.65rem; background: var(--bg); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                    <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                        <span>👤</span> Thông tin khách hàng
+                    </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">SĐT Khách (Để trống nếu khách vãng lai)</label>
-                        <input type="text" id="dh_kh_sdt" class="form-control" placeholder="Nhập SĐT để tích điểm..." oninput="checkCustomer()">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">SĐT Khách (để tích điểm)</label>
+                        <input type="text" id="dh_kh_sdt" class="form-control" placeholder="Nhập SĐT..." oninput="checkCustomer()">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Tên khách hàng</label>
-                        <input type="text" id="dh_kh_ten" class="form-control" placeholder="Nguyễn Văn A">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">Tên khách hàng</label>
+                        <input type="text" id="dh_kh_ten" class="form-control" placeholder="Khách vãng lai">
                     </div>
-                    <div class="alert alert-info" id="pointsInfo" style="display:none; font-size: 0.85rem;">
-                        Điểm hiện tại: <strong id="dh_kh_diem">0</strong> (100 điểm = 20,000 đ)
+                    <div class="alert alert-info" id="pointsInfo" style="display:none; font-size: 0.8rem; padding: 6px 10px; margin-bottom: 0;">
+                        Điểm hiện tại: <strong id="dh_kh_diem">0</strong><br><small style="color: var(--text-muted);">(100 điểm = 20,000 đ)</small>
                     </div>
-                    <div class="form-group" id="usePointsGroup" style="display:none;">
-                        <label class="form-label">Dùng điểm để giảm giá</label>
+                    <div class="form-group" id="usePointsGroup" style="display:none; margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">Dùng điểm giảm giá</label>
                         <input type="number" id="dh_diem_su_dung" class="form-control" value="0" min="0" onchange="updateTotal()">
                     </div>
 
-                    <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Chi nhánh xuất bán</h4>
-                    <select id="dh_chi_nhanh" class="form-control" required></select>
+                    <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+                        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px; font-weight: 600;">Chi nhánh xuất bán</label>
+                        <select id="dh_chi_nhanh" class="form-control" required style="font-size: 0.85rem;"></select>
+                    </div>
                 </div>
 
                 <!-- Cột phải: Giỏ hàng -->
-                <div style="flex: 2;">
-                    <h4 style="margin-bottom: 1rem;">Giỏ hàng</h4>
-                    
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <input list="sp_list" id="sp_search" class="form-control" placeholder="🔍 Tìm kiếm sản phẩm..." style="flex: 1;">
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+                    <!-- Thanh quét mã vạch và tìm kiếm -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <div style="position: relative; flex: 1;">
+                            <input list="sp_list" id="sp_search" class="form-control" placeholder="⚡ Quét mã vạch (Barcode) hoặc gõ tên SP... [Enter]" style="width: 100%; padding-left: 36px;" onkeydown="handleBarcodeKeyDown(event)" autocomplete="off">
+                            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: var(--text-muted); pointer-events: none;">🔍</span>
+                        </div>
                         <datalist id="sp_list"></datalist>
-                        <input type="number" id="sp_qty" class="form-control" style="width: 80px;" value="1" min="1">
-                        <button class="btn btn-primary" onclick="addToCart()">Thêm</button>
+                        <input type="number" id="sp_qty" class="form-control" style="width: 65px; text-align: center;" value="1" min="1" title="Số lượng">
+                        <button type="button" class="btn btn-primary" onclick="addToCart()" title="Thêm vào giỏ" style="padding: 0.5rem 1rem;">Thêm</button>
+                        <button type="button" class="btn" style="border: 1px solid var(--border); display: flex; align-items: center; gap: 4px; padding: 0.5rem 0.75rem;" onclick="moCameraScanner()" title="Bật Camera quét mã vạch">
+                            <span>📷</span> Camera
+                        </button>
                     </div>
 
-                    <table class="cart-table">
-                        <thead>
-                            <tr>
-                                <th>Sản phẩm</th>
-                                <th>SL</th>
-                                <th>Đơn giá</th>
-                                <th>Xóa</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cartBody">
-                            <tr><td colspan="4" style="text-align:center;">Giỏ hàng rỗng</td></tr>
-                        </tbody>
-                    </table>
+                    <!-- Bảng giỏ hàng có scroll cố định chiều cao -->
+                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.75rem; background: var(--card);">
+                        <table class="cart-table" style="margin-bottom: 0; width: 100%;">
+                            <thead style="position: sticky; top: 0; background: var(--bg); z-index: 2;">
+                                <tr>
+                                    <th style="padding: 8px 10px;">Sản phẩm</th>
+                                    <th style="padding: 8px 10px; text-align: center; width: 90px;">SL</th>
+                                    <th style="padding: 8px 10px; text-align: right; width: 110px;">Đơn giá</th>
+                                    <th style="padding: 8px 10px; text-align: center; width: 40px;">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartBody">
+                                <tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: var(--text-muted);">Giỏ hàng rỗng. Hãy quét mã vạch hoặc chọn sản phẩm!</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                    <div style="background: var(--bg); padding: 1rem; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span>Tổng tiền hàng:</span>
-                            <strong id="lbl_tong_tien">0 đ</strong>
+                    <!-- Tổng kết tiền hàng -->
+                    <div style="background: var(--bg); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.875rem;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span style="color: var(--text-muted);">Tổng tiền hàng:</span>
+                                <strong id="lbl_tong_tien">0 đ</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; color: var(--danger);">
+                                <span>Giảm giá (điểm):</span>
+                                <strong id="lbl_giam_gia">0 đ</strong>
+                            </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--danger);">
-                            <span>Giảm giá (từ điểm):</span>
-                            <strong id="lbl_giam_gia">0 đ</strong>
+                        <div style="border-left: 1px solid var(--border); padding-left: 1rem; display: flex; flex-direction: column; justify-content: center;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <span style="font-weight: 600;">Khách cần trả:</span>
+                                <strong id="lbl_khach_tra" style="font-size: 1.35rem; color: var(--primary);">0 đ</strong>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--success); text-align: right; margin-top: 2px;">
+                                Sẽ tích lũy: <span id="lbl_tich_diem">0</span> điểm
+                            </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; color: var(--primary);">
-                            <span>Khách cần trả:</span>
-                            <strong id="lbl_khach_tra">0 đ</strong>
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--success); margin-top: 0.5rem; text-align: right;">
-                            Sẽ tích lũy: <span id="lbl_tich_diem">0</span> điểm
+                    </div>
+
+                    <!-- Chọn phương thức thanh toán -->
+                    <div style="margin-top: 0.75rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <div id="payOptCash" class="pay-method-card active" onclick="setPaymentMethod('TIEN_MAT')" style="padding: 0.5rem 0.85rem;">
+                                <div style="font-size: 1.3rem;">💵</div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">Tiền mặt</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted);">Thu tiền mặt tại quầy</div>
+                                </div>
+                            </div>
+                            <div id="payOptQR" class="pay-method-card" onclick="setPaymentMethod('CHUYEN_KHOAN')" style="padding: 0.5rem 0.85rem;">
+                                <div style="font-size: 1.3rem;">📱</div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                        <span>VietQR MBBank</span>
+                                        <span style="background: #e11d48; color: #fff; font-size: 0.62rem; padding: 1px 4px; border-radius: 3px; font-weight: 800;">MB</span>
+                                    </div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted);">Tự điền số tiền khi quét</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
-                <button type="button" class="btn" style="border: 1px solid var(--border);" onclick="hideModal()">Hủy</button>
-                <button type="button" class="btn btn-primary" style="padding: 0.5rem 2rem; font-size: 1.1rem;" id="btnLuuDonHang" onclick="submitOrder()">Thanh toán ngay</button>
+            <!-- Footer Action Buttons -->
+            <div style="display: flex; gap: 1rem; margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border); justify-content: flex-end; align-items: center;">
+                <button type="button" class="btn" style="border: 1px solid var(--border); padding: 0.6rem 1.25rem;" onclick="hideModal()">Hủy</button>
+                <button type="button" class="btn btn-primary" style="padding: 0.6rem 2rem; font-size: 1rem; display: flex; align-items: center; gap: 8px; font-weight: 600;" id="btnLuuDonHang" onclick="onOrderActionClick()">
+                    <span>Thanh toán ngay</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <script src="js/api.js?v=20261014_2"></script>
+    <!-- Modal Quét Mã VietQR MBBank -->
+    <div class="modal" id="qrPaymentModal" style="z-index: 105;">
+        <div class="modal-content" style="max-width: 480px; padding: 1.75rem; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.6);">
+            <!-- Modal Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.3rem;">📱</span>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.1rem; color: var(--text-main);">Thanh toán VietQR MBBank</h4>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">Mở app ngân hàng quét là tự điền đúng tiền</span>
+                    </div>
+                </div>
+                <span style="background: rgba(20,184,166,0.15); color: var(--primary); font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; border: 1px solid rgba(20,184,166,0.3);">
+                    Napas 247
+                </span>
+            </div>
+
+            <!-- Khung Số tiền cần thanh toán -->
+            <div style="text-align: center; margin-bottom: 1rem; background: rgba(20,184,166,0.08); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid rgba(20,184,166,0.25);">
+                <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Số tiền cần thanh toán</div>
+                <div id="qrSoTien" style="font-size: 1.85rem; font-weight: 800; color: var(--primary); line-height: 1.2; margin-top: 2px;">
+                    0 đ
+                </div>
+            </div>
+
+            <!-- Khung ảnh QR Động có radar scanline -->
+            <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+                <div class="qr-wrapper" style="max-width: 280px; width: 100%;">
+                    <img id="qrImage" src="" alt="Mã VietQR MBBank" style="width: 100%; height: auto; display: block; border-radius: 6px;" onerror="this.onerror=null; this.alt='Không thể tải QR online, vui lòng chuyển khoản theo thông tin bên dưới';">
+                    <div class="qr-scanline"></div>
+                </div>
+            </div>
+
+            <!-- Bảng thông tin tài khoản với nút Copy nhanh -->
+            <div style="background: var(--bg); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1rem; border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <span style="color: var(--text-muted);">Ngân hàng:</span>
+                    <strong style="color: #60a5fa; display: flex; align-items: center; gap: 4px;">
+                        <span style="background: #e11d48; color: #fff; font-size: 0.65rem; padding: 0 4px; border-radius: 3px; font-weight: 800;">MB</span>
+                        MBBank (Quân Đội)
+                    </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <span style="color: var(--text-muted);">Chủ tài khoản:</span>
+                    <strong>VU HUNG HAI</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <span style="color: var(--text-muted);">Số tài khoản:</span>
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <strong id="qrStk" style="font-family: monospace; font-size: 0.95rem; color: var(--primary);">966868686866</strong>
+                        <button class="copy-pill" onclick="copyText('966868686866', this)" title="Sao chép">📋 Chép</button>
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted);">Nội dung CK:</span>
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <strong id="qrNoiDung" style="font-family: monospace; font-size: 0.95rem; color: #f59e0b;">HHM DH...</strong>
+                        <button class="copy-pill" onclick="copyText(document.getElementById('qrNoiDung').textContent, this)" title="Sao chép">📋 Chép</button>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Trạng thái chờ -->
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+                <span class="pulse-indicator"></span>
+                <span>Khách quét xong, thu ngân kiểm tra biến động số dư và bấm xác nhận</span>
+            </div>
+
+            <!-- Các nút bấm hành động -->
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" class="btn" style="flex: 1; border: 1px solid var(--border);" onclick="dongModalQR()">
+                    Quay lại
+                </button>
+                <button type="button" class="btn btn-primary" style="flex: 2; padding: 0.65rem 1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;" id="btnXacNhanNhanTien" onclick="xacNhanNhanTien()">
+                    <span>✅ Tôi đã nhận được tiền</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal In Hóa Đơn (Bill POS K80 / PDF) -->
+    <div class="modal" id="billModal" style="z-index: 110;">
+        <div class="modal-content" style="max-width: 440px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.6);">
+            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 1.2rem;">🧾</span>
+                    <strong style="color: var(--primary); font-size: 1.05rem;">Hóa đơn bán lẻ</strong>
+                </div>
+                <button class="btn btn-sm" onclick="dongModalBill()" style="border: 1px solid var(--border); padding: 2px 8px;">✕ Đóng</button>
+            </div>
+
+            <!-- Mẫu hóa đơn hiển thị (Đồng thời là vùng in #printableReceipt) -->
+            <div id="printableReceipt" class="receipt-paper">
+                <!-- Nội dung hóa đơn in sẽ được render tự động -->
+            </div>
+
+            <!-- Nút điều khiển in -->
+            <div class="no-print" style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                <button type="button" class="btn" style="flex: 1; border: 1px solid var(--border);" onclick="dongModalBill()">Đóng / Đơn mới</button>
+                <button type="button" class="btn btn-primary" style="flex: 2; padding: 0.65rem 1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="inHoaDon()">
+                    <span>🖨️ In Hóa Đơn (Ctrl+P)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Quét Mã Vạch Bằng Camera -->
+    <div class="modal" id="cameraModal" style="z-index: 120;">
+        <div class="modal-content" style="max-width: 440px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 1.2rem;">📷</span>
+                    <strong style="color: var(--primary); font-size: 1.05rem;">Quét mã vạch bằng Camera</strong>
+                </div>
+                <button class="btn btn-sm" onclick="dongCameraScanner()" style="border: 1px solid var(--border); padding: 2px 8px;">✕ Đóng</button>
+            </div>
+
+            <!-- Khung quét Camera -->
+            <div class="camera-viewfinder">
+                <video id="cameraVideo" playsinline autoplay muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <div class="scan-crosshair"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 0.75rem; font-size: 0.82rem; color: var(--text-muted);">
+                Đưa mã vạch của sản phẩm vào giữa tia laser đỏ để quét
+            </div>
+
+            <div id="cameraStatus" style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--primary); min-height: 22px;">
+                Đang khởi động camera...
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; justify-content: center;">
+                <button type="button" class="btn" style="border: 1px solid var(--border); width: 100%;" onclick="dongCameraScanner()">Đóng Camera</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Thông Báo Ting Ting -->
+    <div id="toastNotification" style="display: none; position: fixed; top: 24px; right: 24px; z-index: 9999; background: #064e3b; color: #ecfdf5; border: 1px solid #059669; padding: 14px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); align-items: center; gap: 12px; font-weight: 500; font-size: 0.95rem; animation: slideIn 0.3s ease-out;">
+        <span style="font-size: 1.5rem;">🎉</span>
+        <div id="toastContent">Ting ting! Đã nhận được tiền thanh toán</div>
+    </div>
+
+    <script src="js/api.js?v=20261014_3"></script>
     <script>
         window.getAnhUrl = window.getAnhUrl || function(path) {
             if (!path) return "";
@@ -160,6 +561,74 @@
             const baseHost = window.location.hostname || "localhost";
             if (path.startsWith("/")) return `http://${baseHost}:8080${path}`;
             return `http://${baseHost}:8080/${path}`;
+        };
+
+        window.playTingTingSound = window.playTingTingSound || function() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+                gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(ctx.currentTime);
+                osc1.stop(ctx.currentTime + 0.35);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.12);
+                gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.12);
+                gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(ctx.currentTime + 0.12);
+                osc2.stop(ctx.currentTime + 0.9);
+            } catch(e) {}
+        };
+
+        window.playBarcodeBeep = window.playBarcodeBeep || function() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1760, ctx.currentTime);
+                gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.07);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.07);
+            } catch(e) {}
+        };
+
+        window.playErrorBeep = window.playErrorBeep || function() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(240, ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.18);
+            } catch(e) {}
         };
 
         checkAuth();
@@ -177,6 +646,9 @@
         let customers = [];
         let products = [];
         let cart = [];
+        let selectedPaymentMethod = 'TIEN_MAT';
+        let currentFinalAmount = 0;
+        let currentTempOrderMemo = '';
 
         async function loadData() {
             try {
@@ -185,7 +657,7 @@
                 tbody.innerHTML = '';
                 
                 if (!res.data || res.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Chưa có đơn hàng nào.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">Chưa có đơn hàng nào.</td></tr>';
                     return;
                 }
 
@@ -194,13 +666,25 @@
                     const giamGia = dh.giamGia > 0 ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(dh.giamGia) : '0 đ';
                     const date = new Date(dh.ngayTao).toLocaleString('vi-VN');
                     const tenKhach = dh.khachHang ? dh.khachHang.hoTen + '<br><small>' + dh.khachHang.soDienThoai + '</small>' : 'Khách vãng lai';
+                    
+                    const isCK = dh.phuongThucThanhToan === 'CHUYEN_KHOAN';
+                    const ptttBadge = isCK
+                        ? `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:12px; background:rgba(37,99,235,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3);"><span>📱</span> MBBank QR</span>`
+                        : `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:12px; background:rgba(16,185,129,0.12); color:#34d399; border:1px solid rgba(16,185,129,0.25);"><span>💵</span> Tiền mặt</span>`;
+
                     tbody.innerHTML += `
                         <tr>
                             <td style="font-weight:600; color:var(--primary)">${dh.maDonHang}</td>
                             <td>${tenKhach}</td>
+                            <td>${ptttBadge}</td>
                             <td style="color:var(--danger)">${giamGia}</td>
                             <td style="font-weight:bold; color:var(--text-main)">${price}</td>
                             <td>${date}</td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm" style="border: 1px solid var(--border); padding: 4px 10px; font-size: 0.8rem; border-radius: 6px; background: var(--bg); display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'" onclick="inLaiHoaDon(${dh.id})" title="Xem và in lại hóa đơn">
+                                    🖨️ In bill
+                                </button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -220,6 +704,7 @@
             document.getElementById('dh_diem_su_dung').value = 0;
             document.getElementById('pointsInfo').style.display = 'none';
             document.getElementById('usePointsGroup').style.display = 'none';
+            setPaymentMethod('TIEN_MAT');
             renderCart();
             
             try {
@@ -248,10 +733,17 @@
                         availSp = products.filter(s => s.chiNhanh && s.chiNhanh.id == selCn);
                     }
                     const spList = document.getElementById('sp_list');
-                    spList.innerHTML = availSp.map(s => `<option data-id="${s.id}" value="${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ"></option>`).join('');
+                    spList.innerHTML = availSp.map(s => {
+                        const codeStr = s.maVach ? `[${s.maVach}] ` : (s.maSanPham ? `[${s.maSanPham}] ` : '');
+                        return `<option data-id="${s.id}" value="${codeStr}${s.tenSanPham} (Tồn: ${s.soLuongTon}) - ${new Intl.NumberFormat('vi-VN').format(s.giaBan)}đ"></option>`;
+                    }).join('');
                 };
                 cnSelect.onchange = filterSpByBranch;
                 filterSpByBranch();
+                setTimeout(() => {
+                    const searchEl = document.getElementById('sp_search');
+                    if (searchEl) searchEl.focus();
+                }, 150);
             } catch (err) {
                 document.getElementById('modalError').textContent = "Không tải được dữ liệu: " + err.message;
                 document.getElementById('modalError').style.display = 'block';
@@ -277,36 +769,196 @@
             updateTotal();
         }
 
-        function addToCart() {
-            const searchInput = document.getElementById('sp_search').value;
-            const option = Array.from(document.getElementById('sp_list').options).find(opt => opt.value === searchInput);
-            if (!option) {
-                alert('Vui lòng chọn sản phẩm hợp lệ từ danh sách gợi ý!');
-                return;
+        function handleBarcodeKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                xuLyQuetBarcode(document.getElementById('sp_search').value);
             }
-            const spId = parseInt(option.getAttribute('data-id'));
-            const qty = parseInt(document.getElementById('sp_qty').value);
-            if (!spId || qty < 1) return;
-            
-            // Xóa nội dung tìm kiếm sau khi thêm thành công
-            document.getElementById('sp_search').value = '';
-            
-            const prod = products.find(p => p.id === spId);
-            const exist = cart.find(item => item.spId === spId);
+        }
+
+        function xuLyQuetBarcode(rawCode) {
+            const query = (rawCode || '').trim();
+            if (!query) return;
+
+            const cnSelect = document.getElementById('dh_chi_nhanh');
+            const selCn = cnSelect ? cnSelect.value : null;
+
+            // Danh sách sản phẩm khả dụng theo chi nhánh
+            let availProducts = products;
+            if (user && user.role === 'ADMIN' && selCn) {
+                availProducts = products.filter(s => s.chiNhanh && s.chiNhanh.id == selCn);
+            }
+
+            // 1. Tìm chính xác theo mã vạch EAN-13
+            let match = availProducts.find(s => s.maVach && s.maVach.toLowerCase() === query.toLowerCase());
+
+            // 2. Tìm theo mã sản phẩm (SP001, LAVIE19L, ...)
+            if (!match) {
+                match = availProducts.find(s => s.maSanPham && s.maSanPham.toLowerCase() === query.toLowerCase());
+            }
+
+            // 3. Tìm theo datalist option
+            if (!match) {
+                const opt = Array.from(document.getElementById('sp_list').options).find(o => o.value === query);
+                if (opt) {
+                    const id = parseInt(opt.getAttribute('data-id'));
+                    match = availProducts.find(s => s.id === id);
+                }
+            }
+
+            // 4. Tìm theo tên sản phẩm
+            if (!match) {
+                const lower = query.toLowerCase();
+                const matchedList = availProducts.filter(s => s.tenSanPham && s.tenSanPham.toLowerCase().includes(lower));
+                if (matchedList.length >= 1) {
+                    match = matchedList[0];
+                }
+            }
+
+            if (match) {
+                const qtyInput = document.getElementById('sp_qty');
+                const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+                themSanPhamVaoGio(match, qty);
+                
+                // Xóa ô tìm kiếm và giữ con trỏ chuột để súng quét tiếp tục bắn
+                const searchEl = document.getElementById('sp_search');
+                searchEl.value = '';
+                searchEl.focus();
+                if (qtyInput) qtyInput.value = 1;
+            } else {
+                if (window.playErrorBeep) window.playErrorBeep();
+                hienThiToast(`⚠️ Không tìm thấy sản phẩm có mã: <strong>${query}</strong>`);
+                const searchEl = document.getElementById('sp_search');
+                searchEl.select();
+            }
+        }
+
+        function themSanPhamVaoGio(prod, qty = 1) {
+            if (!prod) return;
+            const exist = cart.find(item => item.spId === prod.id);
             if (exist) {
                 if (exist.qty + qty > prod.soLuongTon) {
-                    alert('Vượt quá số lượng tồn kho!');
+                    if (window.playErrorBeep) window.playErrorBeep();
+                    alert(`Sản phẩm "${prod.tenSanPham}" vượt quá tồn kho (Còn: ${prod.soLuongTon})!`);
                     return;
                 }
                 exist.qty += qty;
+                exist.justAdded = true;
             } else {
                 if (qty > prod.soLuongTon) {
-                    alert('Vượt quá số lượng tồn kho!');
+                    if (window.playErrorBeep) window.playErrorBeep();
+                    alert(`Sản phẩm "${prod.tenSanPham}" không đủ tồn kho (Còn: ${prod.soLuongTon})!`);
                     return;
                 }
-                cart.push({ spId, name: prod.tenSanPham, price: prod.giaBan, anhUrl: prod.anhUrl, qty });
+                cart.push({
+                    spId: prod.id,
+                    name: prod.tenSanPham,
+                    price: prod.giaBan,
+                    anhUrl: prod.anhUrl,
+                    qty: qty,
+                    justAdded: true
+                });
+            }
+
+            // Tiếng bíp súng quét siêu thị
+            if (window.playBarcodeBeep) {
+                window.playBarcodeBeep();
+            }
+
+            hienThiToast(`⚡ Đã quét: <strong>${prod.tenSanPham}</strong> x${qty} (${new Intl.NumberFormat('vi-VN').format(prod.giaBan)}đ)`);
+            renderCart();
+        }
+
+        function addToCart() {
+            const val = document.getElementById('sp_search').value.trim();
+            if (!val) {
+                alert("Vui lòng quét mã vạch hoặc nhập tên sản phẩm!");
+                return;
+            }
+            xuLyQuetBarcode(val);
+        }
+
+        function tangSoLuongGio(spId) {
+            const item = cart.find(c => c.spId === spId);
+            const prod = products.find(p => p.id === spId);
+            if (!item || !prod) return;
+            if (item.qty + 1 > prod.soLuongTon) {
+                alert("Vượt quá số lượng tồn kho!");
+                return;
+            }
+            item.qty += 1;
+            item.justAdded = true;
+            if (window.playBarcodeBeep) window.playBarcodeBeep();
+            renderCart();
+        }
+
+        function giamSoLuongGio(spId) {
+            const item = cart.find(c => c.spId === spId);
+            if (!item) return;
+            if (item.qty > 1) {
+                item.qty -= 1;
+            } else {
+                removeCart(spId);
+                return;
             }
             renderCart();
+        }
+
+        let cameraStream = null;
+        let barcodeDetectorTimer = null;
+
+        async function moCameraScanner() {
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraVideo');
+            const status = document.getElementById('cameraStatus');
+            modal.style.display = 'flex';
+            status.textContent = "Đang khởi động camera...";
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" } }
+                });
+                video.srcObject = cameraStream;
+                await video.play();
+                status.textContent = "🟢 Camera đã sẵn sàng! Đưa mã vạch vào khung";
+
+                if ('BarcodeDetector' in window) {
+                    const detector = new BarcodeDetector({
+                        formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'upc_a']
+                    });
+
+                    barcodeDetectorTimer = setInterval(async () => {
+                        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                            try {
+                                const barcodes = await detector.detect(video);
+                                if (barcodes.length > 0) {
+                                    const code = barcodes[0].rawValue;
+                                    status.textContent = "⚡ Đã đọc mã: " + code;
+                                    dongCameraScanner();
+                                    xuLyQuetBarcode(code);
+                                }
+                            } catch (err) {}
+                        }
+                    }, 250);
+                } else {
+                    status.innerHTML = `<span style="color:#f59e0b; font-size:0.8rem;">Trình duyệt chưa bật BarcodeDetector. Bạn có thể dùng súng quét USB hoặc gõ mã trực tiếp!</span>`;
+                }
+            } catch (err) {
+                status.innerHTML = `<span style="color:var(--danger); font-size:0.8rem;">Không thể mở camera: ${err.message}</span>`;
+            }
+        }
+
+        function dongCameraScanner() {
+            if (barcodeDetectorTimer) {
+                clearInterval(barcodeDetectorTimer);
+                barcodeDetectorTimer = null;
+            }
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+                cameraStream = null;
+            }
+            const modal = document.getElementById('cameraModal');
+            if (modal) modal.style.display = 'none';
         }
 
         function removeCart(spId) {
@@ -326,17 +978,25 @@
                         ? `<img src="${imgUrl}" alt="${c.name}" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display:none; width: 32px; height: 32px; border-radius: 4px; background: rgba(20,184,166,0.15); border: 1px solid var(--border); color: var(--primary); font-size: 0.8rem; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">${firstLetter}</div>`
                         : `<div style="width: 32px; height: 32px; border-radius: 4px; background: rgba(20,184,166,0.15); border: 1px solid var(--border); color: var(--primary); font-size: 0.8rem; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">${firstLetter}</div>`;
 
+                    const flashClass = c.justAdded ? 'scan-flash' : '';
+                    delete c.justAdded;
                     return `
-                    <tr>
+                    <tr class="${flashClass}">
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 ${imgEl}
                                 <span style="font-size:0.875rem; font-weight: 500;">${c.name}</span>
                             </div>
                         </td>
-                        <td>${c.qty}</td>
-                        <td style="font-weight: 500;">${new Intl.NumberFormat('vi-VN').format(c.price)}đ</td>
-                        <td><button class="btn" style="color:var(--danger); padding:2px 6px; font-size: 0.8rem;" onclick="removeCart(${c.spId})">✕</button></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <button type="button" class="btn btn-sm" style="padding: 1px 6px; font-size: 0.8rem; border: 1px solid var(--border); line-height: 1.2;" onclick="giamSoLuongGio(${c.spId})" title="Giảm 1">-</button>
+                                <span style="font-weight: 700; min-width: 18px; text-align: center;">${c.qty}</span>
+                                <button type="button" class="btn btn-sm" style="padding: 1px 6px; font-size: 0.8rem; border: 1px solid var(--border); line-height: 1.2;" onclick="tangSoLuongGio(${c.spId})" title="Tăng 1">+</button>
+                            </div>
+                        </td>
+                        <td style="font-weight: 600; color: var(--primary);">${new Intl.NumberFormat('vi-VN').format(c.price * c.qty)}đ<br><small style="font-weight: normal; color: var(--text-muted); font-size: 0.72rem;">(${new Intl.NumberFormat('vi-VN').format(c.price)}đ/đv)</small></td>
+                        <td><button class="btn" style="color:var(--danger); padding:2px 6px; font-size: 0.8rem;" onclick="removeCart(${c.spId})" title="Xóa khỏi giỏ">✕</button></td>
                     </tr>
                     `;
                 }).join('');
@@ -356,19 +1016,145 @@
             if (giam > sum) giam = sum;
 
             const final = sum - giam;
+            currentFinalAmount = final;
             const diemMoi = Math.floor(final / 10000);
 
             document.getElementById('lbl_tong_tien').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sum);
             document.getElementById('lbl_giam_gia').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(giam);
             document.getElementById('lbl_khach_tra').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(final);
             document.getElementById('lbl_tich_diem').textContent = diemMoi;
+            updatePaymentButtonText();
+        }
+
+        function setPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            const optCash = document.getElementById('payOptCash');
+            const optQR = document.getElementById('payOptQR');
+            if (optCash && optQR) {
+                if (method === 'CHUYEN_KHOAN') {
+                    optCash.classList.remove('active');
+                    optQR.classList.add('active');
+                } else {
+                    optQR.classList.remove('active');
+                    optCash.classList.add('active');
+                }
+            }
+            updatePaymentButtonText();
+        }
+
+        function updatePaymentButtonText() {
+            const btn = document.getElementById('btnLuuDonHang');
+            if (!btn) return;
+            const moneyFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(currentFinalAmount);
+            if (cart.length === 0) {
+                btn.innerHTML = '<span>Thanh toán ngay</span>';
+            } else if (selectedPaymentMethod === 'CHUYEN_KHOAN') {
+                btn.innerHTML = `<span>📱 Mở mã QR MBBank (${moneyFormatted})</span>`;
+            } else {
+                btn.innerHTML = `<span>💵 Thanh toán tiền mặt (${moneyFormatted})</span>`;
+            }
+        }
+
+        function onOrderActionClick() {
+            if (cart.length === 0) {
+                alert("Giỏ hàng rỗng, vui lòng chọn ít nhất 1 sản phẩm!");
+                return;
+            }
+            if (selectedPaymentMethod === 'CHUYEN_KHOAN') {
+                moModalQR();
+            } else {
+                submitOrder('TIEN_MAT');
+            }
+        }
+
+        function moModalQR() {
+            if (currentFinalAmount <= 0) {
+                alert("Đơn hàng 0đ không cần thanh toán chuyển khoản!");
+                return;
+            }
+            // Tạo mã nội dung chuyển khoản ngẫu nhiên đối soát (ví dụ: HHM DH829143)
+            const rnd = Math.floor(100000 + Math.random() * 900000);
+            currentTempOrderMemo = "HHM DH" + rnd;
+
+            const moneyFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(currentFinalAmount);
+            document.getElementById('qrSoTien').textContent = moneyFormatted;
+            document.getElementById('qrNoiDung').textContent = currentTempOrderMemo;
+
+            // Link chuẩn VietQR Napas 247 ngân hàng MBBank
+            const qrUrl = "https://img.vietqr.io/image/MB-966868686866-compact2.png?amount=" + currentFinalAmount + "&addInfo=" + encodeURIComponent(currentTempOrderMemo) + "&accountName=" + encodeURIComponent("VU HUNG HAI");
+            document.getElementById('qrImage').src = qrUrl;
+
+            document.getElementById('qrPaymentModal').style.display = 'flex';
+        }
+
+        function dongModalQR() {
+            document.getElementById('qrPaymentModal').style.display = 'none';
+        }
+
+        async function xacNhanNhanTien() {
+            const btn = document.getElementById('btnXacNhanNhanTien');
+            btn.disabled = true;
+            btn.innerHTML = '<span>Đang xác nhận...</span>';
+            try {
+                // Âm thanh chuông báo nhận tiền ting ting
+                if (window.playTingTingSound) {
+                    window.playTingTingSound();
+                }
+                const moneyFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(currentFinalAmount);
+                hienThiToast(`🎉 Ting ting! Đã nhận được <strong>${moneyFormatted}</strong> qua MBBank!`);
+
+                // Hoàn tất đơn hàng với phương thức CHUYEN_KHOAN
+                dongModalQR();
+                await submitOrder('CHUYEN_KHOAN');
+            } catch (err) {
+                alert("Lỗi khi xác nhận đơn hàng: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>✅ Tôi đã nhận được tiền</span>';
+            }
+        }
+
+        function copyText(text, btnEl) {
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            if (btnEl) {
+                const orig = btnEl.innerHTML;
+                btnEl.textContent = '✓ Đã chép!';
+                btnEl.style.color = 'var(--primary)';
+                setTimeout(() => {
+                    btnEl.innerHTML = orig;
+                    btnEl.style.color = '';
+                }, 1500);
+            }
+        }
+
+        function hienThiToast(htmlMsg) {
+            const toast = document.getElementById('toastNotification');
+            const toastContent = document.getElementById('toastContent');
+            if (toast && toastContent) {
+                toastContent.innerHTML = htmlMsg;
+                toast.style.display = 'flex';
+                clearTimeout(window._toastTimeout);
+                window._toastTimeout = setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 4500);
+            }
         }
 
         function hideModal() {
             document.getElementById('orderModal').style.display = 'none';
         }
 
-        async function submitOrder() {
+        async function submitOrder(pttt) {
             if (cart.length === 0) {
                 alert("Giỏ hàng rỗng, không thể tạo đơn!");
                 return;
@@ -378,11 +1164,13 @@
             btn.disabled = true;
             btn.textContent = "Đang xử lý...";
             
+            const method = pttt || selectedPaymentMethod || 'TIEN_MAT';
             const data = {
                 chiNhanhId: (user && user.branch) ? user.branch : parseInt(document.getElementById('dh_chi_nhanh').value),
                 soDienThoai: document.getElementById('dh_kh_sdt').value.trim(),
                 tenKhachHang: document.getElementById('dh_kh_ten').value.trim(),
                 diemSuDung: parseInt(document.getElementById('dh_diem_su_dung').value) || 0,
+                phuongThucThanhToan: method,
                 chiTiet: cart.map(c => ({
                     sanPhamId: c.spId,
                     soLuong: c.qty
@@ -390,18 +1178,175 @@
             };
 
             try {
-                await goiApi('/don-hang', { method: 'POST', body: JSON.stringify(data) });
+                const res = await goiApi('/don-hang', { method: 'POST', body: JSON.stringify(data) });
+                
+                if (method === 'TIEN_MAT') {
+                    if (window.playTingTingSound) window.playTingTingSound();
+                    hienThiToast(`🎉 Thanh toán thành công đơn hàng <strong>${res.data ? res.data.maDonHang : ''}</strong>!`);
+                }
+
                 hideModal();
                 loadData();
-                alert("Thanh toán đơn hàng thành công!");
+
+                // Chuẩn bị dữ liệu hiển thị hóa đơn in
+                let orderForBill = res.data;
+                if (!orderForBill.chiTietDonHangs || orderForBill.chiTietDonHangs.length === 0) {
+                    orderForBill.chiTietDonHangs = cart.map(c => ({
+                        sanPham: { tenSanPham: c.name },
+                        soLuong: c.qty,
+                        giaBan: c.price,
+                        tamTinh: c.qty * c.price
+                    }));
+                }
+                orderForBill.phuongThucThanhToan = method;
+                moModalInBill(orderForBill);
             } catch (err) {
                 const errDiv = document.getElementById('modalError');
                 errDiv.textContent = err.message;
                 errDiv.style.display = 'block';
+                throw err;
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Thanh toán ngay";
+                updatePaymentButtonText();
             }
+        }
+
+        function moModalInBill(dh) {
+            if (!dh) return;
+            renderReceipt(dh);
+            document.getElementById('billModal').style.display = 'flex';
+        }
+
+        function dongModalBill() {
+            document.getElementById('billModal').style.display = 'none';
+        }
+
+        function inHoaDon() {
+            window.print();
+        }
+
+        async function inLaiHoaDon(dhId) {
+            try {
+                const res = await goiApi('/don-hang/' + dhId);
+                if (res.data) {
+                    moModalInBill(res.data);
+                } else {
+                    alert("Không tìm thấy thông tin chi tiết đơn hàng!");
+                }
+            } catch (err) {
+                alert("Lỗi khi tải đơn hàng: " + err.message);
+            }
+        }
+
+        function renderReceipt(dh) {
+            const el = document.getElementById('printableReceipt');
+            if (!el || !dh) return;
+
+            const dateStr = new Date(dh.ngayTao || Date.now()).toLocaleString('vi-VN');
+            const chiNhanhTen = (dh.chiNhanh && dh.chiNhanh.tenChiNhanh) ? dh.chiNhanh.tenChiNhanh : 'Hùng Hải Mart Hà Nội';
+            const cashierName = (dh.nguoiTao && (dh.nguoiTao.hoTen || dh.nguoiTao.email)) || (user ? (user.hoTen || user.email) : 'Thu ngân');
+            const customerName = dh.khachHang ? `${dh.khachHang.hoTen} (${dh.khachHang.soDienThoai})` : (dh.tenKhachHang ? dh.tenKhachHang : 'Khách vãng lai');
+            const isCK = dh.phuongThucThanhToan === 'CHUYEN_KHOAN';
+            const ptttText = isCK ? 'Chuyển khoản VietQR (MBBank)' : 'Tiền mặt';
+
+            const items = dh.chiTietDonHangs || [];
+            const itemsHtml = items.map(item => {
+                const spTen = item.sanPham ? item.sanPham.tenSanPham : (item.name || 'Sản phẩm');
+                const sl = item.soLuong || item.qty || 1;
+                const donGia = item.giaBan || item.price || 0;
+                const thanhTien = item.tamTinh || (sl * donGia);
+                return `
+                    <tr>
+                        <td style="font-weight: 600; padding: 3px 0;" colspan="4">${spTen}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px dotted #e5e7eb; font-size: 0.78rem;">
+                        <td style="padding-left: 8px; color: #4b5563;">x${sl}</td>
+                        <td style="text-align: right; color: #4b5563;">${new Intl.NumberFormat('vi-VN').format(donGia)}đ</td>
+                        <td style="text-align: right; font-weight: 700;" colspan="2">${new Intl.NumberFormat('vi-VN').format(thanhTien)}đ</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const tongTienHang = items.reduce((acc, it) => acc + (it.tamTinh || ((it.giaBan || it.price || 0) * (it.soLuong || it.qty || 1))), 0);
+            const giamGiaNum = dh.giamGia || 0;
+            const finalNum = dh.tongTien !== undefined ? dh.tongTien : (tongTienHang - giamGiaNum);
+            const diemMoi = Math.floor(finalNum / 10000);
+
+            el.innerHTML = `
+                <div style="text-align: center; margin-bottom: 8px;">
+                    <div style="font-size: 1.3rem; font-weight: 900; letter-spacing: 1px; color: #111827;">HÙNG HẢI MART</div>
+                    <div style="font-size: 0.82rem; font-weight: 600; color: #374151;">${chiNhanhTen}</div>
+                    <div style="font-size: 0.72rem; color: #6b7280;">Hotline: 0362.385.165 • Mở cửa: 06:00 - 23:00</div>
+                </div>
+                
+                <div class="dashed-line"></div>
+                <div style="text-align: center; font-weight: 800; font-size: 1.05rem; margin: 4px 0; color: #111827;">HÓA ĐƠN BÁN LẺ</div>
+                
+                <div style="font-size: 0.78rem; line-height: 1.4; margin-top: 4px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Số HĐ: <strong>${dh.maDonHang || 'DH-POS'}</strong></span>
+                        <span>${dateStr.split(' ')[0]}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Giờ: ${dateStr.split(' ')[1] || ''}</span>
+                        <span>Thu ngân: ${cashierName}</span>
+                    </div>
+                    <div style="margin-top: 2px;">Khách hàng: <strong>${customerName}</strong></div>
+                </div>
+
+                <div class="dashed-line"></div>
+
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Tên hàng</th>
+                            <th style="width: 15%; text-align: right;">SL</th>
+                            <th style="width: 15%; text-align: right;">Đ.Giá</th>
+                            <th style="width: 20%; text-align: right;">T.Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+
+                <div class="dashed-line"></div>
+
+                <div style="font-size: 0.82rem; line-height: 1.5;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Tổng tiền hàng:</span>
+                        <span>${new Intl.NumberFormat('vi-VN').format(tongTienHang || finalNum)}đ</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #dc2626;">
+                        <span>Giảm giá (Điểm):</span>
+                        <span>${giamGiaNum > 0 ? ('-' + new Intl.NumberFormat('vi-VN').format(giamGiaNum) + 'đ') : '0đ'}</span>
+                    </div>
+                    <div class="dashed-line" style="margin: 4px 0;"></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 900; color: #111827; margin: 4px 0;">
+                        <span>TỔNG CỘNG:</span>
+                        <span>${new Intl.NumberFormat('vi-VN').format(finalNum)}đ</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #4b5563;">
+                        <span>Hình thức:</span>
+                        <strong>${ptttText}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #16a34a;">
+                        <span>Điểm tích lũy mới:</span>
+                        <strong>+${diemMoi} điểm</strong>
+                    </div>
+                </div>
+
+                <div class="dashed-line"></div>
+
+                <div style="text-align: center; font-size: 0.75rem; margin-top: 6px; line-height: 1.4;">
+                    <div style="font-weight: 800; font-size: 0.85rem; color: #111827;">CẢM ƠN QUÝ KHÁCH & HẸN GẶP LẠI!</div>
+                    <div style="color: #6b7280; font-size: 0.72rem; margin-top: 2px;">Vui lòng kiểm tra lại hàng hóa và hóa đơn trước khi rời quầy.</div>
+                    <div style="margin-top: 8px; display: flex; justify-content: center;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent('https://hunghaimart.vn/hoa-don/' + (dh.maDonHang || ''))}" alt="QR" style="width: 60px; height: 60px;" onerror="this.style.display='none';">
+                    </div>
+                    <div style="font-size: 0.68rem; color: #9ca3af; margin-top: 4px;">www.hunghaimart.vn</div>
+                </div>
+            `;
         }
 
         document.addEventListener('DOMContentLoaded', loadData);

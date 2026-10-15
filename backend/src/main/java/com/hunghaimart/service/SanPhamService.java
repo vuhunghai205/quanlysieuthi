@@ -90,6 +90,7 @@ public class SanPhamService {
         SanPham sanPham = SanPham.builder()
                 .tenSanPham(request.getTenSanPham())
                 .maSanPham(request.getMaSanPham())
+                .maVach(request.getMaVach())
                 .moTa(request.getMoTa())
                 .danhMuc(danhMuc)
                 .chiNhanh(chiNhanh)
@@ -132,6 +133,7 @@ public class SanPhamService {
 
         sanPham.setTenSanPham(request.getTenSanPham());
         sanPham.setMaSanPham(request.getMaSanPham());
+        sanPham.setMaVach(request.getMaVach());
         sanPham.setMoTa(request.getMoTa());
         sanPham.setDanhMuc(danhMuc);
         sanPham.setNhaCungCap(nhaCungCap);
